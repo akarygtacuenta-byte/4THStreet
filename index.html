@@ -1,37 +1,845 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>STREET CONTROL — Panel de Discord</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STREET CONTROL</title>
+
 <style>
-:root{color-scheme:dark;--bg:#080b12;--surface:#101622;--surface2:#151d2b;--line:#263144;--red:#c1121f;--muted:#9aa6b8;--text:#edf1f7}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:var(--surface2);padding:24px 15px;border-right:1px solid var(--line)}.brand{font-weight:900;letter-spacing:1px;padding:4px 10px 24px}.brand span{display:inline-grid;place-items:center;background:var(--red);border-radius:10px;width:38px;height:38px;margin-right:9px}.nav{display:grid;gap:6px;margin-top:24px}.nav button{background:none;border:0;color:#b7c1d0;text-align:left;padding:12px;border-radius:9px}.nav button.active,.nav button:hover{background:#c1121f26;color:white}.side small{color:var(--muted);display:block;line-height:1.7;margin:35px 10px}.main{min-width:0}.top{height:68px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 30px}.top span{color:var(--muted)}.content{max-width:1100px;padding:30px;margin:auto}.eyebrow{color:#fa6d77;font-size:10px;letter-spacing:2px;font-weight:800}.head{display:flex;justify-content:space-between;align-items:start;gap:20px;margin:10px 0 25px}.head h1{margin:0 0 8px;font-size:29px}.head p{color:var(--muted);margin:0;line-height:1.6}.btn{background:#1a2434;border:1px solid #344257;color:white;padding:10px 14px;border-radius:8px;font-weight:700}.btn.primary{background:var(--red);border-color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;margin-bottom:17px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:grid;gap:7px;margin-bottom:16px}.field label{font-size:12px;font-weight:700;color:#d5dce7}.field input,.field select,.field textarea{width:100%;background:#0b111b;border:1px solid #303c50;color:#eef2f8;border-radius:8px;padding:11px}.field textarea{min-height:92px;resize:vertical}.help{font-size:11px;color:var(--muted);line-height:1.5}.modules{display:grid;gap:10px}.module{display:flex;justify-content:space-between;align-items:center;background:#0c111a;border:1px solid var(--line);border-radius:10px;padding:13px;gap:12px}.module small{display:block;color:var(--muted);margin-top:5px}.module input{accent-color:var(--red);width:18px;height:18px}.section{display:none}.section.active{display:block}.authbox{max-width:500px;margin:70px auto;text-align:center}.status{font-size:12px;color:var(--muted)}.pill{border:1px solid var(--line);padding:7px 10px;border-radius:20px;font-size:12px}.notice{border:1px solid #c1121f55;background:#c1121f12;border-radius:9px;padding:13px;line-height:1.6;font-size:12px;margin-bottom:18px}.actions{display:flex;gap:9px;flex-wrap:wrap}.toast{position:fixed;bottom:20px;right:20px;background:#172235;border:1px solid #3a4a61;padding:13px 17px;border-radius:9px;display:none;max-width:90vw}.toast.show{display:block}.catrow{display:flex;gap:8px;margin-bottom:8px}.catrow input{flex:1}.catrow button{border:1px solid var(--line);background:#202a3b;color:white;border-radius:8px;padding:8px}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.side{padding:12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding-bottom:8px}.nav{display:flex;overflow:auto;margin-top:8px}.nav button{white-space:nowrap;padding:9px}.side small{display:none}.top{height:55px;padding:0 15px}.content{padding:20px 13px}.head{display:block}.head .btn{margin-top:15px}.head h1{font-size:24px}.grid{grid-template-columns:1fr}.panel{padding:15px}}
+:root {
+  --red: #c1121f;
+  --bg: #080b12;
+  --panel: #101622;
+  --panel2: #151d2b;
+  --line: #263144;
+  --text: #edf1f7;
+  --muted: #9aa6b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* LOGIN */
+
+#loginScreen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top, #271018 0, transparent 45%),
+    var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 35px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.logo {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  background: var(--red);
+  border-radius: 15px;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: 2px;
+}
+
+.login-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0 25px;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: white;
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.btn.primary {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.login-card .btn {
+  width: 100%;
+}
+
+/* PANEL */
+
+#app {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 245px;
+  flex-shrink: 0;
+  background: var(--panel2);
+  padding: 25px 15px;
+  border-right: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brandmark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--red);
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+.brand h2 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.brand small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.navlabel {
+  margin: 25px 10px 10px;
+  color: #8190a7;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.nav {
+  display: grid;
+  gap: 5px;
+}
+
+.nav button {
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  text-align: left;
+  background: transparent;
+  color: #b7c1d0;
+}
+
+.nav button:hover,
+.nav button.active {
+  background: #c1121f20;
+  color: white;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  height: 70px;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: #0d121c;
+}
+
+.topbar small {
+  color: var(--muted);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.user img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.content {
+  max-width: 1200px;
+  margin: auto;
+  padding: 32px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.eyebrow {
+  color: #fa6d77;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.heading {
+  margin: 10px 0 25px;
+}
+
+.heading h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 20px;
+}
+
+.card {
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.card small {
+  color: var(--muted);
+}
+
+.stat {
+  margin: 15px 0 5px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.maincols {
+  grid-template-columns: 1.2fr 0.8fr;
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 14px;
+}
+
+.module {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.module:last-child {
+  border-bottom: 0;
+}
+
+.module-info {
+  flex: 1;
+}
+
+.module-info strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.module-info small {
+  font-size: 10px;
+}
+
+.toggle {
+  accent-color: var(--red);
+  width: 18px;
+  height: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  color: #c4cddd;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: #0b111b;
+  color: white;
+  border: 1px solid #303c50;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.field textarea {
+  min-height: 100px;
+}
+
+.savebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 20px;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 15px 20px;
+  background: #172235;
+  border: 1px solid #3a4a61;
+  border-radius: 10px;
+  display: none;
+}
+
+.toast.show {
+  display: block;
+}
+
+@media(max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .maincols {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width: 620px) {
+  #app {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .nav button {
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 20px 14px;
+  }
+
+  .topbar {
+    padding: 0 15px;
+  }
+
+  .stats {
+    gap: 9px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .heading h1 {
+    font-size: 24px;
+  }
+}
 </style>
 </head>
-<body>
-<div class="layout">
-<aside class="side"><div class="brand"><span>SC</span> STREET CONTROL</div><div class="pill" id="userPill">Sin iniciar sesion</div>
-<nav class="nav" id="nav"><button class="active" data-page="home">Resumen</button><button data-page="welcome">Bienvenidas</button><button data-page="tickets">Tickets</button><button data-page="moderation">Moderacion</button><button data-page="activities">Actividades</button><button data-page="logs">Registros</button></nav>
-<small>Panel conectado a Firebase Realtime Database. El bot debe estar encendido en un servidor para ejecutar acciones.</small></aside>
-<main class="main"><header class="top"><span>Servidor / <b id="crumb">Resumen</b></span><div class="actions"><button class="btn" id="loginBtn">Entrar con Google</button><button class="btn" id="logoutBtn" hidden>Salir</button></div></header>
-<div class="content">
-<section id="auth" class="panel authbox"><h1>Configura tu bot</h1><p class="status">Inicia sesion con Google usando el proveedor que habilitaste en Firebase Authentication.</p><div class="notice">Primero inicia sesion. Solo podras editar tu propia ruta de configuracion en Firebase.</div><button class="btn primary" id="loginBtn2">Iniciar sesion con Google</button></section>
-<div id="app" hidden>
-<section class="section active" id="page-home"><div class="eyebrow">CENTRO DE CONTROL</div><div class="head"><div><h1>Tu servidor, bajo control.</h1><p>Configura el bot y guarda los cambios en Firebase.</p></div><button class="btn primary save">Guardar cambios</button></div><div class="notice">Importante: el bot lee la configuracion de la ruta de tu usuario y del ID de servidor que indiques. El ID debe coincidir con GUILD_ID del alojamiento.</div><div class="panel"><div class="grid"><div class="field"><label>ID del servidor de Discord</label><input id="guildId" placeholder="Ej. 123456789012345678"></div><div class="field"><label>Color de los embeds</label><select id="embedColor"><option value="#C1121F">Rojo</option><option value="#2563EB">Azul</option><option value="#7C3AED">Morado</option><option value="#16A34A">Verde</option></select></div></div><h3>Modulos</h3><div class="modules"><label class="module">Bienvenidas y despedidas <input id="modWelcome" type="checkbox" checked></label><label class="module">Sistema de tickets <input id="modTickets" type="checkbox" checked></label><label class="module">Moderacion y antispam <input id="modModeration" type="checkbox" checked></label><label class="module">Actividades programadas <input id="modActivities" type="checkbox" checked></label><label class="module">Registros <input id="modLogs" type="checkbox" checked></label></div></div></section>
-<section class="section" id="page-welcome"><div class="head"><div><h1>Bienvenidas y despedidas</h1><p>Usa {usuario}, {servidor} y {miembros} en los mensajes.</p></div></div><div class="panel grid"><div class="field"><label>ID canal de bienvenida</label><input id="welcomeChannelId" placeholder="ID del canal"></div><div class="field"><label>ID canal de despedida</label><input id="goodbyeChannelId" placeholder="ID del canal"></div><div class="field"><label>Mensaje de bienvenida</label><textarea id="welcomeMessage">¡Bienvenido/a {usuario} a {servidor}! Ahora somos {miembros} miembros.</textarea></div><div class="field"><label>Mensaje de despedida</label><textarea id="goodbyeMessage">{usuario} ha salido de {servidor}.</textarea></div></div></section>
-<section class="section" id="page-tickets"><div class="head"><div><h1>Sistema de tickets</h1><p>Configura canales y rol de soporte. Luego ejecuta /panel-tickets en Discord.</p></div></div><div class="panel grid"><div class="field"><label>ID del canal donde publicar el panel (informativo)</label><input id="ticketPanelChannelId" placeholder="ID canal"></div><div class="field"><label>ID categoria de tickets (opcional)</label><input id="ticketCategoryId" placeholder="ID categoria"></div><div class="field"><label>ID rol de soporte</label><input id="supportRoleId" placeholder="ID rol"></div><div class="field"><label>Titulo del panel</label><input id="ticketTitle" value="CENTRO DE SOPORTE"></div><div class="field"><label>Descripcion</label><textarea id="ticketDescription">¿Necesitas ayuda? Abre un ticket privado.</textarea></div><div class="field"><label>Mensaje al abrir</label><textarea id="ticketOpenMessage">Describe tu consulta con el mayor detalle posible.</textarea></div></div></section>
-<section class="section" id="page-moderation"><div class="head"><div><h1>Moderacion y seguridad</h1><p>El bot necesita permisos adecuados para aplicar estas opciones.</p></div></div><div class="panel grid"><div class="field"><label>ID canal de logs</label><input id="logsChannelId" placeholder="ID canal"></div><div class="field"><label>Mensajes repetidos para antispam</label><input id="spamLimit" type="number" min="3" max="15" value="5"></div><label class="module">Bloquear enlaces <input id="blockLinks" type="checkbox"></label></div></section>
-<section class="section" id="page-activities"><div class="head"><div><h1>Actividades y anuncios</h1><p>Horario de Chile por defecto. El bot debe permanecer encendido.</p></div></div><div class="panel grid"><div class="field"><label>ID canal de anuncios</label><input id="activityChannelId" placeholder="ID canal"></div><div class="field"><label>ID rol a mencionar (opcional)</label><input id="activityRoleId" placeholder="ID rol"></div><div class="field"><label>Hora aviso 1</label><input id="activityTime1" type="time" value="14:00"></div><div class="field"><label>Hora aviso 2</label><input id="activityTime2" type="time" value="21:00"></div><div class="field"><label>Zona horaria</label><select id="timezone"><option value="America/Santiago">Chile (America/Santiago)</option><option value="UTC">UTC</option></select></div><div class="field"><label>Mensaje del anuncio</label><textarea id="activityMessage">¡Atencion, ciudad! En breve comenzara una nueva actividad.</textarea></div></div></section>
-<section class="section" id="page-logs"><div class="head"><div><h1>Registros</h1><p>Selecciona un canal para los eventos que el bot registra.</p></div></div><div class="panel"><div class="field"><label>ID canal de registros</label><input id="logsChannelId2" placeholder="ID canal"></div><p class="help">Este campo sincroniza con el ID de logs usado en Moderacion.</p></div></section>
-<div class="panel"><div class="actions"><button class="btn primary save">Guardar configuracion en Firebase</button><button class="btn" id="reloadBtn">Volver a cargar</button></div><p class="help" id="saveStatus">Los cambios solo se guardan cuando inicias sesion y pulsas Guardar.</p></div>
-</div></div></main></div><div class="toast" id="toast"></div>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
-// PASO: reemplaza estos valores por los de Firebase Console > Configuracion del proyecto > Tus apps web.
+<body>
+
+<!-- INICIO DE SESIÓN -->
+
+<section id="loginScreen">
+  <div class="login-card">
+    <div class="logo">SC</div>
+
+    <h1>STREET CONTROL</h1>
+
+    <p>
+      Inicia sesión para administrar las herramientas
+      de tu comunidad de Discord.
+    </p>
+
+    <button class="btn primary" id="loginBtn">
+      Iniciar sesión con Google
+    </button>
+
+    <p id="loginError"></p>
+  </div>
+</section>
+
+<!-- PANEL -->
+
+<div id="app" class="hidden">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brandmark">SC</div>
+
+      <div>
+        <h2>STREET CONTROL</h2>
+        <small>DISCORD BOT MANAGER</small>
+      </div>
+    </div>
+
+    <div class="navlabel">Panel principal</div>
+
+    <nav class="nav">
+      <button class="active" data-page="dashboard">▦ Resumen</button>
+      <button data-page="welcome">✦ Bienvenidas</button>
+      <button data-page="tickets">▤ Tickets</button>
+      <button data-page="moderation">⬡ Moderación</button>
+      <button data-page="activities">◷ Actividades</button>
+      <button data-page="logs">≋ Registros</button>
+    </nav>
+
+  </aside>
+
+  <main>
+
+    <header class="topbar">
+      <small>Servidor / <strong id="breadcrumb">Resumen</strong></small>
+
+      <div class="user">
+        <span id="userName">Usuario</span>
+        <img id="userPhoto" alt="Foto de perfil">
+        <button class="btn" id="logoutBtn">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- RESUMEN -->
+
+      <section class="page active" id="page-dashboard">
+
+        <div class="eyebrow">CENTRO DE CONTROL</div>
+
+        <div class="heading">
+          <h1>Tu servidor, bajo control.</h1>
+          <p>
+            Configura las herramientas de tu comunidad
+            desde un solo lugar.
+          </p>
+        </div>
+
+        <div class="grid stats">
+
+          <div class="card">
+            <small>Módulos activos</small>
+            <div class="stat" id="activeCount">4 / 5</div>
+          </div>
+
+          <div class="card">
+            <small>Tickets abiertos</small>
+            <div class="stat">—</div>
+          </div>
+
+          <div class="card">
+            <small>Miembros del servidor</small>
+            <div class="stat">—</div>
+          </div>
+
+          <div class="card">
+            <small>Estado del bot</small>
+            <div class="stat">Pendiente</div>
+          </div>
+
+        </div>
+
+        <div class="grid maincols">
+
+          <div class="card">
+            <h3>Módulos del bot</h3>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Bienvenidas y despedidas</strong>
+                <small>Mensajes automáticos</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Sistema de tickets</strong>
+                <small>Soporte privado</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Moderación</strong>
+                <small>Filtros y sanciones</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Actividades</strong>
+                <small>Anuncios y recordatorios</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Registros</strong>
+                <small>Acciones del servidor</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle">
+            </div>
+
+          </div>
+
+          <div class="card">
+            <h3>Actividad reciente</h3>
+            <p><small>Panel iniciado correctamente.</small></p>
+            <p><small>Inicio de sesión conectado a Firebase.</small></p>
+            <p><small>Bot de Discord: pendiente de integración.</small></p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- BIENVENIDAS -->
+
+      <section class="page" id="page-welcome">
+
+        <div class="eyebrow">PERSONALIZACIÓN</div>
+
+        <div class="heading">
+          <h1>Bienvenidas y despedidas</h1>
+          <p>Personaliza los mensajes de tu comunidad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de bienvenida</label>
+            <input id="welcomeChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Mensaje de bienvenida</label>
+            <textarea id="welcomeText">¡Bienvenido/a {usuario} a {servidor}! Lee las normas y disfruta de la ciudad.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Mensaje de despedida</label>
+            <textarea id="goodbyeText">{usuario} ha salido del servidor. ¡Esperamos verte de nuevo!</textarea>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="welcome">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- TICKETS -->
+
+      <section class="page" id="page-tickets">
+
+        <div class="eyebrow">SOPORTE</div>
+
+        <div class="heading">
+          <h1>Sistema de tickets</h1>
+          <p>Personaliza el panel de soporte.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal del panel</label>
+            <input id="ticketChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Título del panel</label>
+            <input id="ticketTitle" value="CENTRO DE SOPORTE">
+          </div>
+
+          <div class="field">
+            <label>Descripción</label>
+            <textarea id="ticketDescription">¿Necesitas ayuda? Abre un ticket y nuestro equipo te atenderá de forma privada.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Categorías de tickets</label>
+            <input id="ticketCategories" value="Cúpula, Postulación, Solicitud de Rango">
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="tickets">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- MODERACIÓN -->
+
+      <section class="page" id="page-moderation">
+
+        <div class="eyebrow">PROTECCIÓN DEL SERVIDOR</div>
+
+        <div class="heading">
+          <h1>Moderación</h1>
+          <p>Configura las opciones básicas de seguridad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de registros de moderación</label>
+            <input id="moderationChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Antispam</strong>
+              <small>Detectar mensajes repetidos</small>
+            </div>
+            <input type="checkbox" id="antiSpam" class="toggle">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Filtro de enlaces</strong>
+              <small>Control de enlaces</small>
+            </div>
+            <input type="checkbox" id="linkFilter" class="toggle">
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="moderation">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ACTIVIDADES -->
+
+      <section class="page" id="page-activities">
+
+        <div class="eyebrow">AGENDA DEL SERVIDOR</div>
+
+        <div class="heading">
+          <h1>Actividades</h1>
+          <p>Configura los avisos de tu comunidad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de anuncios</label>
+            <input id="activityChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Zona horaria</label>
+            <input value="America/Santiago" disabled>
+          </div>
+
+          <div class="field">
+            <label>Hora del aviso 1</label>
+            <input type="time" id="activityTime1" value="14:00">
+          </div>
+
+          <div class="field">
+            <label>Hora del aviso 2</label>
+            <input type="time" id="activityTime2" value="21:00">
+          </div>
+
+          <div class="field">
+            <label>Mensaje del anuncio</label>
+            <textarea id="activityMessage">¡Atención, ciudad! En breve comenzará una nueva actividad.</textarea>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="activities">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- REGISTROS -->
+
+      <section class="page" id="page-logs">
+
+        <div class="eyebrow">AUDITORÍA</div>
+
+        <div class="heading">
+          <h1>Registros</h1>
+          <p>Configura el canal donde se enviarán los registros.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de registros</label>
+            <input id="logsChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Entradas y salidas</strong>
+            </div>
+            <input type="checkbox" id="logsMembers" class="toggle" checked>
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Mensajes editados o eliminados</strong>
+            </div>
+            <input type="checkbox" id="logsMessages" class="toggle">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Acciones de moderación</strong>
+            </div>
+            <input type="checkbox" id="logsModeration" class="toggle" checked>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="logs">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+
+<script type="module">
+
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+/* CONFIGURACIÓN DE FIREBASE */
+
 const firebaseConfig = {
   apiKey: "AIzaSyDxD_YRHUZIGxeQoHAHvuDtbdUSEM51rsA",
   authDomain: "th-street-a49e8.firebaseapp.com",
@@ -42,69 +850,302 @@ const firebaseConfig = {
   appId: "1:92012313924:web:a314de725d90dd3b8beb11",
   measurementId: "G-G5VRN265NH"
 };
-const firebaseReady = !Object.values(firebaseConfig).some(v => String(v).includes("PEGA_AQUI"));
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const $ = id => document.getElementById(id);
+
+const appFirebase = initializeApp(firebaseConfig);
+const auth = getAuth(appFirebase);
+const db = getDatabase(appFirebase);
+const provider = new GoogleAuthProvider();
+
+/* ELEMENTOS */
+
+const loginScreen = document.getElementById("loginScreen");
+const appPanel = document.getElementById("app");
+const loginError = document.getElementById("loginError");
+const toast = document.getElementById("toast");
+
 let currentUser = null;
-const pages = ["home","welcome","tickets","moderation","activities","logs"];
-const labels = {home:"Resumen",welcome:"Bienvenidas",tickets:"Tickets",moderation:"Moderacion",activities:"Actividades",logs:"Registros"};
-function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),3200)}
-function go(page){pages.forEach(p=>$("page-"+p).classList.toggle("active",p===page));document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));$("crumb").textContent=labels[page]||"Resumen"}
-document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.page)));
-async function login() {
-  const buttons = [$("loginBtn"), $("loginBtn2")];
+
+/* MENSAJES */
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+/* INICIAR SESIÓN */
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  loginError.textContent = "";
 
   try {
-    buttons.forEach(button => {
-      if (button) button.disabled = true;
-    });
-
-    if (!firebaseReady) {
-      throw new Error("La configuración de Firebase está incompleta.");
-    }
-
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
     await signInWithPopup(auth, provider);
-    toast("Inicio de sesión correcto.");
   } catch (error) {
-    console.error("Error de inicio de sesión:", error);
+    console.error(error);
 
-    const messages = {
+    const errors = {
       "auth/operation-not-allowed":
         "Activa Google en Firebase Authentication.",
       "auth/unauthorized-domain":
-        "Añade el dominio de esta página a los dominios autorizados de Firebase.",
+        "Añade el dominio de GitHub Pages a Firebase.",
       "auth/popup-blocked":
-        "El navegador bloqueó la ventana. Permite las ventanas emergentes.",
+        "Permite las ventanas emergentes en tu navegador.",
       "auth/popup-closed-by-user":
-        "Cerraste la ventana de inicio de sesión.",
-      "auth/invalid-api-key":
-        "La API key de Firebase no es válida."
+        "Se cerró la ventana de inicio de sesión."
     };
 
-    toast(
-      messages[error.code] ||
-      `Error de acceso: ${error.code || error.message || "desconocido"}`
+    loginError.textContent =
+      errors[error.code] || "No se pudo iniciar sesión.";
+  }
+});
+
+/* CERRAR SESIÓN */
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo cerrar sesión.");
+  }
+});
+
+/* ESTADO DE AUTENTICACIÓN */
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+
+  if (user) {
+    loginScreen.classList.add("hidden");
+    appPanel.classList.remove("hidden");
+
+    document.getElementById("userName").textContent =
+      user.displayName || user.email;
+
+    document.getElementById("userPhoto").src =
+      user.photoURL || "";
+
+    await loadConfigs();
+  } else {
+    loginScreen.classList.remove("hidden");
+    appPanel.classList.add("hidden");
+  }
+});
+
+/* NAVEGACIÓN */
+
+const labels = {
+  dashboard: "Resumen",
+  welcome: "Bienvenidas",
+  tickets: "Tickets",
+  moderation: "Moderación",
+  activities: "Actividades",
+  logs: "Registros"
+};
+
+function goToPage(page) {
+  document.querySelectorAll(".page").forEach(section => {
+    section.classList.remove("active");
+  });
+
+  document.getElementById("page-" + page)?.classList.add("active");
+
+  document.querySelectorAll(".nav button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.page === page
     );
-  } finally {
-    buttons.forEach(button => {
-      if (button) button.disabled = false;
-    });
+  });
+
+  document.getElementById("breadcrumb").textContent =
+    labels[page] || "Resumen";
+}
+
+document.querySelectorAll(".nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    goToPage(button.dataset.page);
+  });
+});
+
+/* CONTADOR DE MÓDULOS */
+
+function updateCount() {
+  const toggles = [
+    ...document.querySelectorAll(".module-toggle")
+  ];
+
+  const active = toggles.filter(toggle => toggle.checked).length;
+
+  document.getElementById("activeCount").textContent =
+    active + " / " + toggles.length;
+}
+
+document.querySelectorAll(".module-toggle").forEach(toggle => {
+  toggle.addEventListener("change", updateCount);
+});
+
+/* GUARDAR CONFIGURACIONES */
+
+function getConfigValues() {
+  return {
+    welcome: {
+      channel: document.getElementById("welcomeChannel").value,
+      welcomeMessage: document.getElementById("welcomeText").value,
+      goodbyeMessage: document.getElementById("goodbyeText").value
+    },
+
+    tickets: {
+      channel: document.getElementById("ticketChannel").value,
+      title: document.getElementById("ticketTitle").value,
+      description: document.getElementById("ticketDescription").value,
+      categories: document.getElementById("ticketCategories").value
+    },
+
+    moderation: {
+      channel: document.getElementById("moderationChannel").value,
+      antiSpam: document.getElementById("antiSpam").checked,
+      linkFilter: document.getElementById("linkFilter").checked
+    },
+
+    activities: {
+      channel: document.getElementById("activityChannel").value,
+      time1: document.getElementById("activityTime1").value,
+      time2: document.getElementById("activityTime2").value,
+      message: document.getElementById("activityMessage").value,
+      timezone: "America/Santiago"
+    },
+
+    logs: {
+      channel: document.getElementById("logsChannel").value,
+      members: document.getElementById("logsMembers").checked,
+      messages: document.getElementById("logsMessages").checked,
+      moderation: document.getElementById("logsModeration").checked
+    }
+  };
+}
+
+async function saveConfig(section) {
+  if (!currentUser) {
+    showToast("Primero inicia sesión.");
+    return;
+  }
+
+  try {
+    const values = getConfigValues();
+
+    const configRef = ref(
+      db,
+      "users/" + currentUser.uid + "/configs/" + section
+    );
+
+    await set(configRef, values[section]);
+
+    showToast("Configuración guardada en Firebase.");
+  } catch (error) {
+    console.error(error);
+    showToast("Error al guardar. Revisa las reglas de Firebase.");
   }
 }
-onAuthStateChanged(auth,async user=>{currentUser=user;$("auth").hidden=!!user;$("app").hidden=!user;$("loginBtn").hidden=!!user;$("logoutBtn").hidden=!user;$("userPill").textContent=user?user.email:"Sin iniciar sesion";if(user){$("saveStatus").textContent="UID Firebase: "+user.uid+" — copia este UID a OWNER_UID en el alojamiento.";await loadConfig()}});
-function getGuildId(){return $("guildId").value.trim()}
-function path(){if(!currentUser)throw Error("Inicia sesion primero.");const g=getGuildId();if(!/^\d{15,22}$/.test(g))throw Error("Escribe un ID de servidor Discord valido.");return `users/${currentUser.uid}/guilds/${g}/config`}
-const fields=["embedColor","welcomeChannelId","goodbyeChannelId","welcomeMessage","goodbyeMessage","ticketPanelChannelId","ticketCategoryId","supportRoleId","ticketTitle","ticketDescription","ticketOpenMessage","logsChannelId","spamLimit","activityChannelId","activityRoleId","activityTime1","activityTime2","timezone","activityMessage"];
-function readForm(){const out={};fields.forEach(id=>{const el=$(id);if(el)out[id]=el.value});out.spamLimit=Number(out.spamLimit||5);out.blockLinks=$("blockLinks").checked;out.modules={welcome:$("modWelcome").checked,tickets:$("modTickets").checked,moderation:$("modModeration").checked,activities:$("modActivities").checked,logs:$("modLogs").checked};out.updatedAt=new Date().toISOString();return out}
-function fillForm(c){fields.forEach(id=>{const el=$(id);if(el&&c[id]!==undefined)el.value=c[id]});$("blockLinks").checked=!!c.blockLinks;const m=c.modules||{};$("modWelcome").checked=m.welcome!==false;$("modTickets").checked=m.tickets!==false;$("modModeration").checked=m.moderation!==false;$("modActivities").checked=m.activities!==false;$("modLogs").checked=m.logs!==false;$("logsChannelId2").value=c.logsChannelId||""}
-async function loadConfig(){if(!firebaseReady)return;try{const g=getGuildId();if(!g)return;const snap=await get(ref(db,path()));if(snap.exists())fillForm(snap.val());$("saveStatus").textContent="Configuracion cargada de Firebase."}catch(e){$("saveStatus").textContent="No se pudo cargar: "+e.message}}
-async function saveConfig(){if(!firebaseReady)return toast("Completa firebaseConfig antes de guardar.");try{if($("logsChannelId2").value.trim())$("logsChannelId").value=$("logsChannelId2").value.trim();const p=path();const c=readForm();await set(ref(db,p),c);$("saveStatus").textContent="Guardado correctamente. UID: "+currentUser.uid;toast("Configuracion guardada en Firebase.")}catch(e){toast("Error al guardar: "+e.message)}}
-document.querySelectorAll(".save").forEach(b=>b.addEventListener("click",saveConfig));$("reloadBtn").onclick=loadConfig;
-$("guildId").addEventListener("change",loadConfig);
+
+document.querySelectorAll(".saveBtn").forEach(button => {
+  button.addEventListener("click", () => {
+    saveConfig(button.dataset.config);
+  });
+});
+
+/* CARGAR CONFIGURACIONES */
+
+async function loadConfigs() {
+  if (!currentUser) return;
+
+  try {
+    const sections = [
+      "welcome",
+      "tickets",
+      "moderation",
+      "activities",
+      "logs"
+    ];
+
+    for (const section of sections) {
+      const configRef = ref(
+        db,
+        "users/" + currentUser.uid + "/configs/" + section
+      );
+
+      const snapshot = await get(configRef);
+
+      if (snapshot.exists()) {
+        applyConfig(section, snapshot.val());
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudieron cargar todas las configuraciones.");
+  }
+}
+
+/* APLICAR CONFIGURACIONES */
+
+function applyConfig(section, data) {
+  const fields = {
+    welcome: {
+      channel: "welcomeChannel",
+      welcomeMessage: "welcomeText",
+      goodbyeMessage: "goodbyeText"
+    },
+
+    tickets: {
+      channel: "ticketChannel",
+      title: "ticketTitle",
+      description: "ticketDescription",
+      categories: "ticketCategories"
+    },
+
+    moderation: {
+      channel: "moderationChannel",
+      antiSpam: "antiSpam",
+      linkFilter: "linkFilter"
+    },
+
+    activities: {
+      channel: "activityChannel",
+      time1: "activityTime1",
+      time2: "activityTime2",
+      message: "activityMessage"
+    },
+
+    logs: {
+      channel: "logsChannel",
+      members: "logsMembers",
+      messages: "logsMessages",
+      moderation: "logsModeration"
+    }
+  };
+
+  const mapping = fields[section];
+
+  if (!mapping) return;
+
+  for (const key in mapping) {
+    const element = document.getElementById(mapping[key]);
+
+    if (!element || data[key] === undefined) continue;
+
+    if (element.type === "checkbox") {
+      element.checked = Boolean(data[key]);
+    } else {
+      element.value = data[key];
+    }
+  }
+}
+
+updateCount();
+
 </script>
-</body></html>
+
+</body>
+</html>
