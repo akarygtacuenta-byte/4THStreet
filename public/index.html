@@ -1439,6 +1439,23 @@ function applyConfig(section, data) {
       element.value = data[key];
     }
   }
+
+  if (section === "embeds" && Array.isArray(data.days)) {
+    document.querySelectorAll("#embedDays input").forEach(item => {
+      item.checked = data.days.includes(item.value);
+    });
+    if (!document.querySelector("#embedDays input:checked")) {
+      const monday = document.querySelector('#embedDays input[value="1"]');
+      if (monday) monday.checked = true;
+    }
+  }
+
+  updateEmbedPreview();
+  updateWelcomePreview();
+  updateTicketPreview();
+  updateModerationPreview();
+  updateActivityPreview();
+  updateLogsPreview();
 }
 
 function updateTicketPreview() {
