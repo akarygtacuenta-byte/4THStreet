@@ -392,6 +392,7 @@ main {
 
 .day-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.day-picker label{display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0b1019;font-size:12px}.day-picker input{accent-color:var(--red)}.discord-preview{display:flex;gap:12px;background:#202225;border-radius:8px;padding:14px;color:#dcddde}.discord-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#c1121f;font-weight:800}.discord-message{min-width:0;flex:1}.discord-message>strong{font-size:13px}.discord-message>strong small{font-weight:400;color:#aeb3ba;margin-left:6px}.preview-thumbnail{float:right;max-width:76px;max-height:76px;object-fit:cover;border-radius:6px;margin:4px 0 8px 10px}.preview-banner{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:5px;margin:12px 0}.preview-card{margin-top:16px}.welcome-preview{margin-top:10px}.embed-preview{border-left:4px solid var(--embed-color,#c1121f);background:#111827;padding:14px;border-radius:5px;overflow:hidden}.embed-preview h3{margin:0 0 8px}.embed-preview p{white-space:pre-wrap;overflow-wrap:anywhere}.embed-preview small{color:#9ca3af}
 
+.preview-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.preview-buttons span{display:inline-block;padding:8px 10px;border-radius:6px;background:#303642;color:#f4f5f7;font-size:11px;border:1px solid #454d5b}.preview-card .discord-preview{margin-top:12px}.preview-card{margin-top:20px}
 @media(max-width: 900px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
@@ -731,6 +732,21 @@ main {
             <input id="supportRoleId" placeholder="ID del rol que atenderá los tickets">
           </div>
 
+          <div class="card preview-card">
+            <h3>Vista previa del panel de tickets</h3>
+            <p><small>Simulación del mensaje que se publicará en Discord.</small></p>
+            <div class="discord-preview">
+              <div class="discord-avatar">SC</div>
+              <div class="discord-message">
+                <strong>STREET CONTROL <small>HOY</small></strong>
+                <div class="embed-preview" id="ticketPreview">
+                  <h3 id="ticketPreviewTitle">CENTRO DE SOPORTE</h3>
+                  <p id="ticketPreviewDescription">¿Necesitas ayuda? Abre un ticket.</p>
+                  <div class="preview-buttons" id="ticketPreviewButtons"><span>🎫 Cúpula</span><span>📝 Postulación</span><span>🏅 Solicitud de Rango</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="tickets">
@@ -782,6 +798,21 @@ main {
             <input type="checkbox" id="linkFilter" class="toggle">
           </div>
 
+          <div class="card preview-card">
+            <h3>Vista previa de moderación</h3>
+            <p><small>Ejemplo de cómo se mostraría un registro de seguridad.</small></p>
+            <div class="discord-preview">
+              <div class="discord-avatar">SC</div>
+              <div class="discord-message">
+                <strong>STREET CONTROL <small>REGISTRO</small></strong>
+                <div class="embed-preview" id="moderationPreview">
+                  <h3>🛡️ Estado de protección del servidor</h3>
+                  <p id="moderationPreviewDescription">Antispam: desactivado\nFiltro de enlaces: desactivado\nLímite de mensajes: 5</p>
+                  <small>STREET CONTROL • Moderación</small>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="moderation">
@@ -836,6 +867,21 @@ main {
             <input id="activityRole" placeholder="ID del rol de actividad">
           </div>
 
+          <div class="card preview-card">
+            <h3>Vista previa del anuncio de actividad</h3>
+            <p><small>Así se verá un aviso de actividad con los horarios configurados.</small></p>
+            <div class="discord-preview">
+              <div class="discord-avatar">SC</div>
+              <div class="discord-message">
+                <strong>STREET CONTROL <small>ANUNCIO</small></strong>
+                <div class="embed-preview" id="activityPreview">
+                  <h3>📢 Próxima actividad</h3>
+                  <p id="activityPreviewDescription">¡Atención, ciudad! En breve comenzará una nueva actividad.</p>
+                  <small id="activityPreviewTimes">Avisos: 14:00 y 21:00 · Hora de Chile</small>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="activities">
@@ -972,6 +1018,21 @@ main {
             <input type="checkbox" id="logsModeration" class="toggle" checked>
           </div>
 
+          <div class="card preview-card">
+            <h3>Vista previa de registros</h3>
+            <p><small>Ejemplo de un registro que podría enviar el bot según las opciones seleccionadas.</small></p>
+            <div class="discord-preview">
+              <div class="discord-avatar">SC</div>
+              <div class="discord-message">
+                <strong>STREET CONTROL <small>REGISTRO</small></strong>
+                <div class="embed-preview" id="logsPreview">
+                  <h3>📋 Registro del servidor</h3>
+                  <p id="logsPreviewDescription">Entradas y salidas: activadas\nMensajes editados/eliminados: desactivados\nAcciones de moderación: activadas</p>
+                  <small>Canal de registros: sin configurar</small>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="logs">
@@ -1378,8 +1439,59 @@ function applyConfig(section, data) {
       element.value = data[key];
     }
   }
+
+  if (section === "embeds" && Array.isArray(data.days)) {
+    document.querySelectorAll("#embedDays input").forEach(item => {
+      item.checked = data.days.includes(item.value);
+    });
+    if (!document.querySelector("#embedDays input:checked")) {
+      const monday = document.querySelector('#embedDays input[value="1"]');
+      if (monday) monday.checked = true;
+    }
+  }
+
+  updateEmbedPreview();
+  updateWelcomePreview();
+  updateTicketPreview();
+  updateModerationPreview();
+  updateActivityPreview();
+  updateLogsPreview();
 }
 
+function updateTicketPreview() {
+  const title = document.getElementById("ticketTitle").value.trim();
+  const description = document.getElementById("ticketDescription").value.trim();
+  const categories = document.getElementById("ticketCategories").value.split(",").map(v => v.trim()).filter(Boolean);
+  document.getElementById("ticketPreviewTitle").textContent = title || "Título del panel de tickets";
+  document.getElementById("ticketPreviewDescription").textContent = description || "Descripción del panel de soporte.";
+  document.getElementById("ticketPreviewButtons").replaceChildren(...(categories.length ? categories : ["Categoría"]).map(name => {
+    const el = document.createElement("span"); el.textContent = "🎫 " + name; return el;
+  }));
+}
+function updateModerationPreview() {
+  const antispam = document.getElementById("antiSpam").checked;
+  const links = document.getElementById("linkFilter").checked;
+  const limit = document.getElementById("spamLimit").value || "5";
+  document.getElementById("moderationPreviewDescription").textContent =
+    "Antispam: " + (antispam ? "activado" : "desactivado") +
+    "\nFiltro de enlaces: " + (links ? "activado" : "desactivado") +
+    "\nLímite de mensajes: " + limit;
+}
+function updateActivityPreview() {
+  document.getElementById("activityPreviewDescription").textContent =
+    document.getElementById("activityMessage").value.trim() || "Texto del anuncio de actividad.";
+  document.getElementById("activityPreviewTimes").textContent =
+    "Avisos: " + (document.getElementById("activityTime1").value || "14:00") + " y " +
+    (document.getElementById("activityTime2").value || "21:00") + " · Hora de Chile";
+}
+function updateLogsPreview() {
+  const channel = document.getElementById("logsChannel").value.trim();
+  document.getElementById("logsPreviewDescription").textContent =
+    "Entradas y salidas: " + (document.getElementById("logsMembers").checked ? "activadas" : "desactivadas") +
+    "\nMensajes editados/eliminados: " + (document.getElementById("logsMessages").checked ? "activados" : "desactivados") +
+    "\nAcciones de moderación: " + (document.getElementById("logsModeration").checked ? "activadas" : "desactivadas") +
+    "\nCanal: " + (channel || "sin configurar");
+}
 function setPreviewImage(elementId, url) {
   const image = document.getElementById(elementId);
   if (!image) return;
@@ -1429,6 +1541,15 @@ document.getElementById("embedColorText").addEventListener("change", event => {
 updateCount();
 updateEmbedPreview();
 updateWelcomePreview();
+updateTicketPreview();
+updateModerationPreview();
+updateActivityPreview();
+updateLogsPreview();
+["ticketTitle","ticketDescription","ticketCategories"].forEach(id => document.getElementById(id).addEventListener("input", updateTicketPreview));
+["antiSpam","linkFilter","spamLimit"].forEach(id => document.getElementById(id).addEventListener("input", updateModerationPreview));
+["activityMessage","activityTime1","activityTime2"].forEach(id => document.getElementById(id).addEventListener("input", updateActivityPreview));
+["logsChannel","logsMembers","logsMessages","logsModeration"].forEach(id => document.getElementById(id).addEventListener("input", updateLogsPreview));
+
 
 </script>
 
