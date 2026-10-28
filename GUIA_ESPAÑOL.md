@@ -102,12 +102,12 @@ El panel web no mantiene el bot encendido: el bot necesita un proceso Node.js en
 ## 7. Comandos disponibles
 
 - `/ping`: comprueba que el bot responde.
-- `/panel-tickets`: publica el boton de abrir ticket en el canal actual.
+- `/panel-tickets`: publica el panel de tickets en el canal configurado. Los usuarios eligen una categoria (por ejemplo Cúpula, Postulación o Solicitud de Rango) y reciben un canal privado.\n- `/evento`: crea un evento con título, descripción, fecha `AAAA-MM-DD`, hora `HH:MM` de Chile, canal y rol opcional. Los usuarios pueden confirmar si participarán; la asistencia se guarda en Firebase si la conexión está activa.
 - `/limpiar cantidad:10`: borra hasta 100 mensajes recientes; Discord no permite borrar en bloque mensajes de mas de 14 dias.
 - `/expulsar usuario:@miembro motivo:...`
 - `/banear usuario:@miembro motivo:...`
 
-El bot crea tickets privados con el rol de soporte y un boton para cerrarlos. La cuenta del bot debe tener jerarquia y permisos suficientes. Los permisos de Discord siempre limitan lo que el bot puede hacer.
+El bot crea tickets privados por categoría, permite mencionar el rol de soporte configurado en el panel y muestra un botón para cerrarlos. En el panel puedes configurar el ID de la categoría de Discord donde se crearán los tickets y el ID del rol de soporte. En Actividades puedes configurar el rol opcional que se mencionará. La cuenta del bot debe tener jerarquia y permisos suficientes. Los permisos de Discord siempre limitan lo que el bot puede hacer.
 
 ## 8. Errores frecuentes
 
