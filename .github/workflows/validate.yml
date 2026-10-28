@@ -20,3 +20,18 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Validar sintaxis del bot
         run: node --check bot.js
+      - name: Extraer script del panel web
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("public/index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r'<script type="module">(.*?)</script>', html, re.S)
+          if not scripts:
+              raise SystemExit("No se encontró el script del panel web")
+          Path("/tmp/panel.mjs").write_text(scripts[-1], encoding="utf-8")
+          PY
+      - name: Validar sintaxis del panel web
+        run: node --check /tmp/panel.mjs
+      - name: Validar JSON de Firebase
+        run: node -e "JSON.parse(require('fs').readFileSync('firebase.json', 'utf8')); JSON.parse(require('fs').readFileSync('database.rules.json', 'utf8')); console.log('JSON válido')"
