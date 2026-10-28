@@ -111,7 +111,10 @@ async function sendConfigured(channelId, text, member = null) {
 async function sendLog(text, type = "moderation") {
   if (!config.modules?.logs || !config.logsChannelId) return;
   if (config.logOptions && config.logOptions[type] === false) return;
-  await sendConfigured(config.logsChannelId, text);
+  const channel = await client.channels.fetch(config.logsChannelId).catch(() => null);
+  if (!channel || !channel.isTextBased()) return;
+  await channel.send({ content: text, allowedMentions: { parse: [] } })
+    .catch(err => console.error("No se pudo enviar registro:", err.message));
 }
 async function publishTicketPanel(interaction) {
   const embed = new EmbedBuilder().setColor(config.embedColor || "#C1121F")
