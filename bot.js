@@ -9,7 +9,7 @@ const {
   ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder
 } = require("discord.js");
 
-const required = ["DISCORD_TOKEN", "CLIENT_ID", "GUILD_ID", "OWNER_UID",
+const required = ["DISCORD_TOKEN", "CLIENT_ID", "OWNER_UID",
   "FIREBASE_DATABASE_URL", "FIREBASE_SERVICE_ACCOUNT_JSON"];
 for (const key of required) {
   if (!process.env[key]) console.warn(`[CONFIG] Falta la variable ${key}`);
