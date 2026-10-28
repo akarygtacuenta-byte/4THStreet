@@ -37,7 +37,7 @@ Las reglas de la base permiten que cada usuario autenticado lea y escriba solo s
 
 ## 3. Render
 
-Servicio esperado: [fourthstreet.onrender.com](https://fourthstreet.onrender.com).
+La URL depende del servicio que creaste en Render; no se debe asumir un nombre de dominio.
 
 En **Render → servicio → Environment**, configura estas variables:
 
@@ -64,7 +64,7 @@ Para GitHub Pages, abre **Settings → Pages** y publica desde la rama `main`, c
 
 ## 5. Verificación
 
-1. Abre [https://fourthstreet.onrender.com/health](https://fourthstreet.onrender.com/health). El JSON muestra si el bot está conectado, si Firebase se inicializó, qué configuraciones encontró y qué variables faltan. No muestra los secretos.
+1. En Render, copia la URL pública del servicio STREET CONTROL. En el panel, sección Resumen, pega la URL en **URL pública de tu servicio STREET CONTROL en Render** y pulsa **Guardar URL y comprobar conexión**. El panel consultará automáticamente `/health`. También puedes abrir `TU_URL_DE_RENDER/health` en el navegador. El JSON muestra si el bot está conectado, si Firebase se inicializó, qué configuraciones encontró y qué variables faltan; no muestra los secretos.
 2. Inicia sesión en el panel. En Resumen, el estado del bot se actualiza automáticamente.
 3. Copia el UID mostrado y comprueba que coincide exactamente con `OWNER_UID` en Render.
 4. En Discord ejecuta `/estado` y luego `/ping`.
