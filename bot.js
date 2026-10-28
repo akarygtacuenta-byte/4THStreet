@@ -232,6 +232,7 @@ client.once(Events.ClientReady, async readyClient => {
         ticketChannelId: tickets.channel || "",
         ticketTitle: tickets.title || "CENTRO DE SOPORTE",
         ticketDescription: tickets.description || "Pulsa el boton para abrir un ticket privado.",
+        ticketOpenMessage: tickets.openMessage || "Describe tu consulta aqui y el equipo te ayudara.",
         ticketCategories: tickets.categories || "",
         ticketCategoryId: tickets.categoryId || "",
         supportRoleId: tickets.supportRoleId || "",
