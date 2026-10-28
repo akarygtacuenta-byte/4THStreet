@@ -484,6 +484,12 @@ cron.schedule("* * * * *", async () => {
 const app = express();
 app.get("/", (_req, res) => res.sendFile(require("path").join(__dirname, "health.html")));
 app.get("/health", (_req, res) => {
+  const origin = _req.headers.origin;
+  if (origin === "https://akarygtacuenta-byte.github.io" || origin === "http://localhost:5500" || origin === "http://127.0.0.1:5500") {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
+  res.setHeader("Cache-Control", "no-store");
   const missing = ["DISCORD_TOKEN", "CLIENT_ID", "OWNER_UID", "FIREBASE_DATABASE_URL", "FIREBASE_SERVICE_ACCOUNT_JSON"]
     .filter(key => !process.env[key]?.trim());
   if (!process.env.GUILD_ID?.trim()) missing.push("GUILD_ID (opcional: se usan comandos globales)");
