@@ -44,6 +44,7 @@ const commands = [
   new SlashCommandBuilder().setName("panel-tickets").setDescription("Publica el panel configurado de tickets")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
   new SlashCommandBuilder().setName("ping").setDescription("Comprueba si el bot responde"),
+  new SlashCommandBuilder().setName("estado").setDescription("Muestra el estado del bot y la conexion con Firebase"),
   new SlashCommandBuilder().setName("limpiar").setDescription("Borra mensajes recientes")
     .addIntegerOption(o => o.setName("cantidad").setDescription("Cantidad entre 1 y 100").setMinValue(1).setMaxValue(100).setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
@@ -295,6 +296,18 @@ client.on(Events.InteractionCreate, async interaction => {
   try {
     if (interaction.isChatInputCommand()) {
       if (interaction.commandName === "ping") return interaction.reply({ content: `Pong! ${client.ws.ping} ms`, ephemeral: true });
+      if (interaction.commandName === "estado") {
+        const active = Object.entries(config.modules || {}).filter(([, enabled]) => enabled).map(([name]) => name);
+        return interaction.reply({
+          content: [
+            `🤖 **Bot:** ${client.isReady() ? "Conectado" : "No conectado"}`,
+            `🔥 **Firebase Admin:** ${db ? "Inicializado" : "No conectado"}`,
+            `⚙️ **Configuración cargada:** ${firebaseConfigLoaded ? "Sí" : "No"}`,
+            `🧩 **Módulos activos:** ${active.length ? active.join(", ") : "Ninguno o aún no configurados"}`
+          ].join("\\n"),
+          ephemeral: true
+        });
+      }
       if (interaction.commandName === "evento") return publishEvent(interaction);
       if (interaction.commandName === "panel-tickets") {
         if (!config.modules?.tickets) return interaction.reply({ content: "El sistema de tickets esta desactivado en el panel.", ephemeral: true });
