@@ -102,7 +102,8 @@ El panel web no mantiene el bot encendido: el bot necesita un proceso Node.js en
 ## 7. Comandos disponibles
 
 - `/ping`: comprueba que el bot responde.
-- `/panel-tickets`: publica el panel de tickets en el canal configurado. Los usuarios eligen una categoria (por ejemplo Cúpula, Postulación o Solicitud de Rango) y reciben un canal privado.\n- `/evento`: crea un evento con título, descripción, fecha `AAAA-MM-DD`, hora `HH:MM` de Chile, canal y rol opcional. Los usuarios pueden confirmar si participarán; la asistencia se guarda en Firebase si la conexión está activa.
+- `/panel-tickets`: publica el panel de tickets en el canal configurado. Los usuarios eligen una categoria (por ejemplo Cúpula, Postulación o Solicitud de Rango) y reciben un canal privado.
+- `/evento`: crea un evento con título, descripción, fecha `AAAA-MM-DD`, hora `HH:MM` de Chile, canal y rol opcional. Los usuarios pueden confirmar si participarán; la asistencia se guarda en Firebase si la conexión está activa.
 - `/limpiar cantidad:10`: borra hasta 100 mensajes recientes; Discord no permite borrar en bloque mensajes de mas de 14 dias.
 - `/expulsar usuario:@miembro motivo:...`
 - `/banear usuario:@miembro motivo:...`
