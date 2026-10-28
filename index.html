@@ -41,7 +41,7 @@ const firebaseConfig = {
   messagingSenderId: "92012313924",
   appId: "1:92012313924:web:a314de725d90dd3b8beb11",
   measurementId: "G-G5VRN265NH"
-}; 
+};
 const firebaseReady = !Object.values(firebaseConfig).some(v => String(v).includes("PEGA_AQUI"));
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -53,49 +53,8 @@ const labels = {home:"Resumen",welcome:"Bienvenidas",tickets:"Tickets",moderatio
 function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),3200)}
 function go(page){pages.forEach(p=>$("page-"+p).classList.toggle("active",p===page));document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));$("crumb").textContent=labels[page]||"Resumen"}
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.page)));
-async function login() {
-  const buttons = [$("loginBtn"), $("loginBtn2")];
-
-  try {
-    buttons.forEach(button => {
-      if (button) button.disabled = true;
-    });
-
-    if (!firebaseReady) {
-      throw new Error("La configuración de Firebase está incompleta.");
-    }
-
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    await signInWithPopup(auth, provider);
-    toast("Inicio de sesión correcto.");
-  } catch (error) {
-    console.error("Error de inicio de sesión:", error);
-
-    const messages = {
-      "auth/operation-not-allowed":
-        "Activa Google en Firebase Authentication.",
-      "auth/unauthorized-domain":
-        "Añade el dominio de esta página a los dominios autorizados de Firebase.",
-      "auth/popup-blocked":
-        "El navegador bloqueó la ventana. Permite las ventanas emergentes.",
-      "auth/popup-closed-by-user":
-        "Cerraste la ventana de inicio de sesión.",
-      "auth/invalid-api-key":
-        "La API key de Firebase no es válida."
-    };
-
-    toast(
-      messages[error.code] ||
-      `Error de acceso: ${error.code || error.message || "desconocido"}`
-    );
-  } finally {
-    buttons.forEach(button => {
-      if (button) button.disabled = false;
-    });
-  }
-}
+async function login(){if(!firebaseReady)return toast("Primero completa firebaseConfig con los datos de tu proyecto.");try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){toast("No se pudo iniciar sesion: "+e.message)}}
+$("loginBtn").onclick=login;$("loginBtn2").onclick=login;$("logoutBtn").onclick=()=>signOut(auth);
 onAuthStateChanged(auth,async user=>{currentUser=user;$("auth").hidden=!!user;$("app").hidden=!user;$("loginBtn").hidden=!!user;$("logoutBtn").hidden=!user;$("userPill").textContent=user?user.email:"Sin iniciar sesion";if(user){$("saveStatus").textContent="UID Firebase: "+user.uid+" — copia este UID a OWNER_UID en el alojamiento.";await loadConfig()}});
 function getGuildId(){return $("guildId").value.trim()}
 function path(){if(!currentUser)throw Error("Inicia sesion primero.");const g=getGuildId();if(!/^\d{15,22}$/.test(g))throw Error("Escribe un ID de servidor Discord valido.");return `users/${currentUser.uid}/guilds/${g}/config`}
