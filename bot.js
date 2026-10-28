@@ -304,7 +304,7 @@ client.on(Events.InteractionCreate, async interaction => {
             `🔥 **Firebase Admin:** ${db ? "Inicializado" : "No conectado"}`,
             `⚙️ **Configuración cargada:** ${firebaseConfigLoaded ? "Sí" : "No"}`,
             `🧩 **Módulos activos:** ${active.length ? active.join(", ") : "Ninguno o aún no configurados"}`
-          ].join("\\n"),
+          ].join("\n"),
           ephemeral: true
         });
       }
