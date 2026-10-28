@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STREET CONTROL</title>
+
+<style>
+:root {
+  --red: #c1121f;
+  --bg: #080b12;
+  --panel: #101622;
+  --panel2: #151d2b;
+  --line: #263144;
+  --text: #edf1f7;
+  --muted: #9aa6b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* LOGIN */
+
+#loginScreen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top, #271018 0, transparent 45%),
+    var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 35px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.logo {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  background: var(--red);
+  border-radius: 15px;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: 2px;
+}
+
+.login-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0 25px;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: white;
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.btn.primary {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.login-card .btn {
+  width: 100%;
+}
+
+/* PANEL */
+
+#app {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 245px;
+  flex-shrink: 0;
+  background: var(--panel2);
+  padding: 25px 15px;
+  border-right: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brandmark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--red);
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+.brand h2 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.brand small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.navlabel {
+  margin: 25px 10px 10px;
+  color: #8190a7;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.nav {
+  display: grid;
+  gap: 5px;
+}
+
+.nav button {
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  text-align: left;
+  background: transparent;
+  color: #b7c1d0;
+}
+
+.nav button:hover,
+.nav button.active {
+  background: #c1121f20;
+  color: white;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar {
+  height: 70px;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: #0d121c;
+}
+
+.topbar small {
+  color: var(--muted);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.user img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.content {
+  max-width: 1200px;
+  margin: auto;
+  padding: 32px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.eyebrow {
+  color: #fa6d77;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.heading {
+  margin: 10px 0 25px;
+}
+
+.heading h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 20px;
+}
+
+.card {
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.card small {
+  color: var(--muted);
+}
+
+.stat {
+  margin: 15px 0 5px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.maincols {
+  grid-template-columns: 1.2fr 0.8fr;
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 14px;
+}
+
+.module {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.module:last-child {
+  border-bottom: 0;
+}
+
+.module-info {
+  flex: 1;
+}
+
+.module-info strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.module-info small {
+  font-size: 10px;
+}
+
+.toggle {
+  accent-color: var(--red);
+  width: 18px;
+  height: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  color: #c4cddd;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: #0b111b;
+  color: white;
+  border: 1px solid #303c50;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.field textarea {
+  min-height: 100px;
+}
+
+.savebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 20px;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 15px 20px;
+  background: #172235;
+  border: 1px solid #3a4a61;
+  border-radius: 10px;
+  display: none;
+}
+
+.toast.show {
+  display: block;
+}
+
+@media(max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .maincols {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width: 620px) {
+  #app {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .nav button {
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 20px 14px;
+  }
+
+  .topbar {
+    padding: 0 15px;
+  }
+
+  .stats {
+    gap: 9px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .heading h1 {
+    font-size: 24px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- INICIO DE SESIÓN -->
+
+<section id="loginScreen">
+  <div class="login-card">
+    <div class="logo">SC</div>
+
+    <h1>STREET CONTROL</h1>
+
+    <p>
+      Inicia sesión para administrar las herramientas
+      de tu comunidad de Discord.
+    </p>
+
+    <button class="btn primary" id="loginBtn">
+      Iniciar sesión con Google
+    </button>
+
+    <p id="loginError"></p>
+  </div>
+</section>
+
+<!-- PANEL -->
+
+<div id="app" class="hidden">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brandmark">SC</div>
+
+      <div>
+        <h2>STREET CONTROL</h2>
+        <small>DISCORD BOT MANAGER</small>
+      </div>
+    </div>
+
+    <div class="navlabel">Panel principal</div>
+
+    <nav class="nav">
+      <button class="active" data-page="dashboard">▦ Resumen</button>
+      <button data-page="welcome">✦ Bienvenidas</button>
+      <button data-page="tickets">▤ Tickets</button>
+      <button data-page="moderation">⬡ Moderación</button>
+      <button data-page="activities">◷ Actividades</button>
+      <button data-page="logs">≋ Registros</button>
+    </nav>
+
+  </aside>
+
+  <main>
+
+    <header class="topbar">
+      <small>Servidor / <strong id="breadcrumb">Resumen</strong></small>
+
+      <div class="user">
+        <span id="userName">Usuario</span>
+        <img id="userPhoto" alt="Foto de perfil">
+        <button class="btn" id="logoutBtn">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- RESUMEN -->
+
+      <section class="page active" id="page-dashboard">
+
+        <div class="eyebrow">CENTRO DE CONTROL</div>
+
+        <div class="heading">
+          <h1>Tu servidor, bajo control.</h1>
+          <p>
+            Configura las herramientas de tu comunidad
+            desde un solo lugar.
+          </p>
+        </div>
+
+        <div class="grid stats">
+
+          <div class="card">
+            <small>Módulos activos</small>
+            <div class="stat" id="activeCount">4 / 5</div>
+          </div>
+
+          <div class="card">
+            <small>Tickets abiertos</small>
+            <div class="stat">—</div>
+          </div>
+
+          <div class="card">
+            <small>Miembros del servidor</small>
+            <div class="stat">—</div>
+          </div>
+
+          <div class="card">
+            <small>Estado del bot</small>
+            <div class="stat">Pendiente</div>
+          </div>
+
+        </div>
+
+        <div class="grid maincols">
+
+          <div class="card">
+            <h3>Módulos del bot</h3>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Bienvenidas y despedidas</strong>
+                <small>Mensajes automáticos</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Sistema de tickets</strong>
+                <small>Soporte privado</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Moderación</strong>
+                <small>Filtros y sanciones</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Actividades</strong>
+                <small>Anuncios y recordatorios</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Registros</strong>
+                <small>Acciones del servidor</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle">
+            </div>
+
+          </div>
+
+          <div class="card">
+            <h3>Actividad reciente</h3>
+            <p><small>Panel iniciado correctamente.</small></p>
+            <p><small>Inicio de sesión conectado a Firebase.</small></p>
+            <p><small>Bot de Discord: pendiente de integración.</small></p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- BIENVENIDAS -->
+
+      <section class="page" id="page-welcome">
+
+        <div class="eyebrow">PERSONALIZACIÓN</div>
+
+        <div class="heading">
+          <h1>Bienvenidas y despedidas</h1>
+          <p>Personaliza los mensajes de tu comunidad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de bienvenida</label>
+            <input id="welcomeChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Mensaje de bienvenida</label>
+            <textarea id="welcomeText">¡Bienvenido/a {usuario} a {servidor}! Lee las normas y disfruta de la ciudad.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Mensaje de despedida</label>
+            <textarea id="goodbyeText">{usuario} ha salido del servidor. ¡Esperamos verte de nuevo!</textarea>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="welcome">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- TICKETS -->
+
+      <section class="page" id="page-tickets">
+
+        <div class="eyebrow">SOPORTE</div>
+
+        <div class="heading">
+          <h1>Sistema de tickets</h1>
+          <p>Personaliza el panel de soporte.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal del panel</label>
+            <input id="ticketChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Título del panel</label>
+            <input id="ticketTitle" value="CENTRO DE SOPORTE">
+          </div>
+
+          <div class="field">
+            <label>Descripción</label>
+            <textarea id="ticketDescription">¿Necesitas ayuda? Abre un ticket y nuestro equipo te atenderá de forma privada.</textarea>
+          </div>
+
+          <div class="field">
+            <label>Categorías de tickets</label>
+            <input id="ticketCategories" value="Cúpula, Postulación, Solicitud de Rango">
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="tickets">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- MODERACIÓN -->
+
+      <section class="page" id="page-moderation">
+
+        <div class="eyebrow">PROTECCIÓN DEL SERVIDOR</div>
+
+        <div class="heading">
+          <h1>Moderación</h1>
+          <p>Configura las opciones básicas de seguridad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de registros de moderación</label>
+            <input id="moderationChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Antispam</strong>
+              <small>Detectar mensajes repetidos</small>
+            </div>
+            <input type="checkbox" id="antiSpam" class="toggle">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Filtro de enlaces</strong>
+              <small>Control de enlaces</small>
+            </div>
+            <input type="checkbox" id="linkFilter" class="toggle">
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="moderation">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ACTIVIDADES -->
+
+      <section class="page" id="page-activities">
+
+        <div class="eyebrow">AGENDA DEL SERVIDOR</div>
+
+        <div class="heading">
+          <h1>Actividades</h1>
+          <p>Configura los avisos de tu comunidad.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de anuncios</label>
+            <input id="activityChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="field">
+            <label>Zona horaria</label>
+            <input value="America/Santiago" disabled>
+          </div>
+
+          <div class="field">
+            <label>Hora del aviso 1</label>
+            <input type="time" id="activityTime1" value="14:00">
+          </div>
+
+          <div class="field">
+            <label>Hora del aviso 2</label>
+            <input type="time" id="activityTime2" value="21:00">
+          </div>
+
+          <div class="field">
+            <label>Mensaje del anuncio</label>
+            <textarea id="activityMessage">¡Atención, ciudad! En breve comenzará una nueva actividad.</textarea>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="activities">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- REGISTROS -->
+
+      <section class="page" id="page-logs">
+
+        <div class="eyebrow">AUDITORÍA</div>
+
+        <div class="heading">
+          <h1>Registros</h1>
+          <p>Configura el canal donde se enviarán los registros.</p>
+        </div>
+
+        <div class="card">
+
+          <div class="field">
+            <label>Canal de registros</label>
+            <input id="logsChannel" placeholder="ID del canal">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Entradas y salidas</strong>
+            </div>
+            <input type="checkbox" id="logsMembers" class="toggle" checked>
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Mensajes editados o eliminados</strong>
+            </div>
+            <input type="checkbox" id="logsMessages" class="toggle">
+          </div>
+
+          <div class="module">
+            <div class="module-info">
+              <strong>Acciones de moderación</strong>
+            </div>
+            <input type="checkbox" id="logsModeration" class="toggle" checked>
+          </div>
+
+          <div class="savebar">
+            <small>Guarda la configuración en Firebase.</small>
+            <button class="btn primary saveBtn" data-config="logs">
+              Guardar configuración
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+
+<script type="module">
+
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+/* CONFIGURACIÓN DE FIREBASE */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDxD_YRHUZIGxeQoHAHvuDtbdUSEM51rsA",
+  authDomain: "th-street-a49e8.firebaseapp.com",
+  databaseURL: "https://th-street-a49e8-default-rtdb.firebaseio.com",
+  projectId: "th-street-a49e8",
+  storageBucket: "th-street-a49e8.firebasestorage.app",
+  messagingSenderId: "92012313924",
+  appId: "1:92012313924:web:a314de725d90dd3b8beb11",
+  measurementId: "G-G5VRN265NH"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const auth = getAuth(appFirebase);
+const db = getDatabase(appFirebase);
+const provider = new GoogleAuthProvider();
+
+/* ELEMENTOS */
+
+const loginScreen = document.getElementById("loginScreen");
+const appPanel = document.getElementById("app");
+const loginError = document.getElementById("loginError");
+const toast = document.getElementById("toast");
+
+let currentUser = null;
+
+/* MENSAJES */
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+/* INICIAR SESIÓN */
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  loginError.textContent = "";
+
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error(error);
+
+    const errors = {
+      "auth/operation-not-allowed":
+        "Activa Google en Firebase Authentication.",
+      "auth/unauthorized-domain":
+        "Añade el dominio de GitHub Pages a Firebase.",
+      "auth/popup-blocked":
+        "Permite las ventanas emergentes en tu navegador.",
+      "auth/popup-closed-by-user":
+        "Se cerró la ventana de inicio de sesión."
+    };
+
+    loginError.textContent =
+      errors[error.code] || "No se pudo iniciar sesión.";
+  }
+});
+
+/* CERRAR SESIÓN */
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo cerrar sesión.");
+  }
+});
+
+/* ESTADO DE AUTENTICACIÓN */
+
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+
+  if (user) {
+    loginScreen.classList.add("hidden");
+    appPanel.classList.remove("hidden");
+
+    document.getElementById("userName").textContent =
+      user.displayName || user.email;
+
+    document.getElementById("userPhoto").src =
+      user.photoURL || "";
+
+    await loadConfigs();
+  } else {
+    loginScreen.classList.remove("hidden");
+    appPanel.classList.add("hidden");
+  }
+});
+
+/* NAVEGACIÓN */
+
+const labels = {
+  dashboard: "Resumen",
+  welcome: "Bienvenidas",
+  tickets: "Tickets",
+  moderation: "Moderación",
+  activities: "Actividades",
+  logs: "Registros"
+};
+
+function goToPage(page) {
+  document.querySelectorAll(".page").forEach(section => {
+    section.classList.remove("active");
+  });
+
+  document.getElementById("page-" + page)?.classList.add("active");
+
+  document.querySelectorAll(".nav button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.page === page
+    );
+  });
+
+  document.getElementById("breadcrumb").textContent =
+    labels[page] || "Resumen";
+}
+
+document.querySelectorAll(".nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    goToPage(button.dataset.page);
+  });
+});
+
+/* CONTADOR DE MÓDULOS */
+
+function updateCount() {
+  const toggles = [
+    ...document.querySelectorAll(".module-toggle")
+  ];
+
+  const active = toggles.filter(toggle => toggle.checked).length;
+
+  document.getElementById("activeCount").textContent =
+    active + " / " + toggles.length;
+}
+
+document.querySelectorAll(".module-toggle").forEach(toggle => {
+  toggle.addEventListener("change", updateCount);
+});
+
+/* GUARDAR CONFIGURACIONES */
+
+function getConfigValues() {
+  return {
+    welcome: {
+      channel: document.getElementById("welcomeChannel").value,
+      welcomeMessage: document.getElementById("welcomeText").value,
+      goodbyeMessage: document.getElementById("goodbyeText").value
+    },
+
+    tickets: {
+      channel: document.getElementById("ticketChannel").value,
+      title: document.getElementById("ticketTitle").value,
+      description: document.getElementById("ticketDescription").value,
+      categories: document.getElementById("ticketCategories").value
+    },
+
+    moderation: {
+      channel: document.getElementById("moderationChannel").value,
+      antiSpam: document.getElementById("antiSpam").checked,
+      linkFilter: document.getElementById("linkFilter").checked
+    },
+
+    activities: {
+      channel: document.getElementById("activityChannel").value,
+      time1: document.getElementById("activityTime1").value,
+      time2: document.getElementById("activityTime2").value,
+      message: document.getElementById("activityMessage").value,
+      timezone: "America/Santiago"
+    },
+
+    logs: {
+      channel: document.getElementById("logsChannel").value,
+      members: document.getElementById("logsMembers").checked,
+      messages: document.getElementById("logsMessages").checked,
+      moderation: document.getElementById("logsModeration").checked
+    }
+  };
+}
+
+async function saveConfig(section) {
+  if (!currentUser) {
+    showToast("Primero inicia sesión.");
+    return;
+  }
+
+  try {
+    const values = getConfigValues();
+
+    const configRef = ref(
+      db,
+      "users/" + currentUser.uid + "/configs/" + section
+    );
+
+    await set(configRef, values[section]);
+
+    showToast("Configuración guardada en Firebase.");
+  } catch (error) {
+    console.error(error);
+    showToast("Error al guardar. Revisa las reglas de Firebase.");
+  }
+}
+
+document.querySelectorAll(".saveBtn").forEach(button => {
+  button.addEventListener("click", () => {
+    saveConfig(button.dataset.config);
+  });
+});
+
+/* CARGAR CONFIGURACIONES */
+
+async function loadConfigs() {
+  if (!currentUser) return;
+
+  try {
+    const sections = [
+      "welcome",
+      "tickets",
+      "moderation",
+      "activities",
+      "logs"
+    ];
+
+    for (const section of sections) {
+      const configRef = ref(
+        db,
+        "users/" + currentUser.uid + "/configs/" + section
+      );
+
+      const snapshot = await get(configRef);
+
+      if (snapshot.exists()) {
+        applyConfig(section, snapshot.val());
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudieron cargar todas las configuraciones.");
+  }
+}
+
+/* APLICAR CONFIGURACIONES */
+
+function applyConfig(section, data) {
+  const fields = {
+    welcome: {
+      channel: "welcomeChannel",
+      welcomeMessage: "welcomeText",
+      goodbyeMessage: "goodbyeText"
+    },
+
+    tickets: {
+      channel: "ticketChannel",
+      title: "ticketTitle",
+      description: "ticketDescription",
+      categories: "ticketCategories"
+    },
+
+    moderation: {
+      channel: "moderationChannel",
+      antiSpam: "antiSpam",
+      linkFilter: "linkFilter"
+    },
+
+    activities: {
+      channel: "activityChannel",
+      time1: "activityTime1",
+      time2: "activityTime2",
+      message: "activityMessage"
+    },
+
+    logs: {
+      channel: "logsChannel",
+      members: "logsMembers",
+      messages: "logsMessages",
+      moderation: "logsModeration"
+    }
+  };
+
+  const mapping = fields[section];
+
+  if (!mapping) return;
+
+  for (const key in mapping) {
+    const element = document.getElementById(mapping[key]);
+
+    if (!element || data[key] === undefined) continue;
+
+    if (element.type === "checkbox") {
+      element.checked = Boolean(data[key]);
+    } else {
+      element.value = data[key];
+    }
+  }
+}
+
+updateCount();
+
+</script>
+
+</body>
+</html>
