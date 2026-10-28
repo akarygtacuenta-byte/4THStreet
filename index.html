@@ -533,7 +533,7 @@ main {
                 <strong>Bienvenidas y despedidas</strong>
                 <small>Mensajes automáticos</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="welcome" checked>
             </div>
 
             <div class="module">
@@ -541,7 +541,7 @@ main {
                 <strong>Sistema de tickets</strong>
                 <small>Soporte privado</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="tickets" checked>
             </div>
 
             <div class="module">
@@ -549,7 +549,7 @@ main {
                 <strong>Moderación</strong>
                 <small>Filtros y sanciones</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="moderation" checked>
             </div>
 
             <div class="module">
@@ -557,7 +557,7 @@ main {
                 <strong>Actividades</strong>
                 <small>Anuncios y recordatorios</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="activities" checked>
             </div>
 
             <div class="module">
@@ -565,7 +565,7 @@ main {
                 <strong>Registros</strong>
                 <small>Acciones del servidor</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle">
+              <input type="checkbox" class="toggle module-toggle" data-module="logs">
             </div>
 
           </div>
@@ -650,7 +650,7 @@ main {
 
           <div class="field">
             <label>Categorías de tickets</label>
-            <input id="ticketCategories" value="Cúpula, Postulación, Solicitud de Rango">
+            <input id="ticketCategories" value="Cúpula, Postulación, Solicitud de Rango">\n          </div>\n\n          <div class="field">\n            <label>ID de la categoría de Discord donde se crearán los tickets (opcional)</label>\n            <input id="ticketCategoryId" placeholder="ID de categoría">\n          </div>\n\n          <div class="field">\n            <label>ID del rol de soporte (opcional)</label>\n            <input id="supportRoleId" placeholder="ID del rol que atenderá los tickets">
           </div>
 
           <div class="savebar">
@@ -744,7 +744,7 @@ main {
 
           <div class="field">
             <label>Mensaje del anuncio</label>
-            <textarea id="activityMessage">¡Atención, ciudad! En breve comenzará una nueva actividad.</textarea>
+            <textarea id="activityMessage">¡Atención, ciudad! En breve comenzará una nueva actividad.</textarea>\n          </div>\n\n          <div class="field">\n            <label>ID del rol que será mencionado (opcional)</label>\n            <input id="activityRole" placeholder="ID del rol de actividad">
           </div>
 
           <div class="savebar">
@@ -984,7 +984,21 @@ function updateCount() {
 }
 
 document.querySelectorAll(".module-toggle").forEach(toggle => {
-  toggle.addEventListener("change", updateCount);
+  toggle.addEventListener("change", async () => {
+    updateCount();
+    if (!currentUser) return;
+    const modules = {};
+    document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+      modules[item.dataset.module] = item.checked;
+    });
+    try {
+      await set(ref(db, "users/" + currentUser.uid + "/configs/modules"), modules);
+      showToast("Módulos actualizados.");
+    } catch (error) {
+      console.error(error);
+      showToast("No se pudieron guardar los módulos.");
+    }
+  });
 });
 
 /* GUARDAR CONFIGURACIONES */
@@ -998,10 +1012,12 @@ function getConfigValues() {
     },
 
     tickets: {
-      channel: document.getElementById("ticketChannel").value,
+      channel: document.getElementById("ticketChannel").value.trim(),
       title: document.getElementById("ticketTitle").value,
       description: document.getElementById("ticketDescription").value,
-      categories: document.getElementById("ticketCategories").value
+      categories: document.getElementById("ticketCategories").value,
+      categoryId: document.getElementById("ticketCategoryId").value.trim(),
+      supportRoleId: document.getElementById("supportRoleId").value.trim()
     },
 
     moderation: {
@@ -1015,6 +1031,7 @@ function getConfigValues() {
       time1: document.getElementById("activityTime1").value,
       time2: document.getElementById("activityTime2").value,
       message: document.getElementById("activityMessage").value,
+      roleId: document.getElementById("activityRole").value.trim(),
       timezone: "America/Santiago"
     },
 
@@ -1062,6 +1079,15 @@ async function loadConfigs() {
   if (!currentUser) return;
 
   try {
+    const modulesSnapshot = await get(ref(db, "users/" + currentUser.uid + "/configs/modules"));
+    if (modulesSnapshot.exists()) {
+      const modules = modulesSnapshot.val() || {};
+      document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+        if (modules[item.dataset.module] !== undefined) item.checked = Boolean(modules[item.dataset.module]);
+      });
+      updateCount();
+    }
+
     const sections = [
       "welcome",
       "tickets",
@@ -1102,7 +1128,9 @@ function applyConfig(section, data) {
       channel: "ticketChannel",
       title: "ticketTitle",
       description: "ticketDescription",
-      categories: "ticketCategories"
+      categories: "ticketCategories",
+      categoryId: "ticketCategoryId",
+      supportRoleId: "supportRoleId"
     },
 
     moderation: {
@@ -1115,7 +1143,8 @@ function applyConfig(section, data) {
       channel: "activityChannel",
       time1: "activityTime1",
       time2: "activityTime2",
-      message: "activityMessage"
+      message: "activityMessage",
+      roleId: "activityRole"
     },
 
     logs: {
