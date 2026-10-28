@@ -544,7 +544,7 @@ main {
 
           <div class="card">
             <small>Estado del bot</small>
-            <div class="stat">Pendiente</div>
+            <div class="stat" id="botStatus">Comprobando…</div>
           </div>
 
         </div>
@@ -559,7 +559,7 @@ main {
                 <strong>Bienvenidas y despedidas</strong>
                 <small>Mensajes automáticos</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" data-module="welcome" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="welcome">
             </div>
 
             <div class="module">
@@ -567,7 +567,7 @@ main {
                 <strong>Sistema de tickets</strong>
                 <small>Soporte privado</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" data-module="tickets" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="tickets">
             </div>
 
             <div class="module">
@@ -575,7 +575,7 @@ main {
                 <strong>Moderación</strong>
                 <small>Filtros y sanciones</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" data-module="moderation" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="moderation">
             </div>
 
             <div class="module">
@@ -583,7 +583,7 @@ main {
                 <strong>Actividades</strong>
                 <small>Anuncios y recordatorios</small>
               </div>
-              <input type="checkbox" class="toggle module-toggle" data-module="activities" checked>
+              <input type="checkbox" class="toggle module-toggle" data-module="activities">
             </div>
 
             <div class="module">
@@ -608,7 +608,10 @@ main {
             <h3>Actividad reciente</h3>
             <p><small>Panel iniciado correctamente.</small></p>
             <p><small>Inicio de sesión conectado a Firebase.</small></p>
-            <p><small>Conexión del bot: revisa Render → Logs para confirmar que está activo.</small></p>
+            <p><small>Conexión del bot: <span id="botStatusDetail">comprobando el servicio…</span></small></p>
+            <p><small>UID de Firebase para Render (OWNER_UID): <code id="firebaseUid">Inicia sesión</code></small></p>
+            <button class="btn" id="copyUidBtn" type="button">Copiar UID para Render</button>
+            <p><small>En Render, OWNER_UID debe ser exactamente este UID. El proyecto Firebase del bot también debe coincidir con el del panel.</small></p>
           </div>
 
         </div>
@@ -1144,6 +1147,17 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
 
 /* CERRAR SESIÓN */
 
+document.getElementById("copyUidBtn").addEventListener("click", async () => {
+  if (!currentUser?.uid) return showToast("Primero inicia sesión.");
+  try {
+    await navigator.clipboard.writeText(currentUser.uid);
+    showToast("UID copiado. Pégalo en Render como OWNER_UID.");
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo copiar automáticamente. Selecciona y copia el UID mostrado.");
+  }
+});
+
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   try {
     await signOut(auth);
@@ -1167,6 +1181,7 @@ onAuthStateChanged(auth, async user => {
 
     document.getElementById("userPhoto").src =
       user.photoURL || "";
+    document.getElementById("firebaseUid").textContent = user.uid;
 
     await loadConfigs();
   } else {
@@ -1366,6 +1381,7 @@ async function loadConfigs() {
       "logs"
     ];
 
+    const savedSections = new Set();
     for (const section of sections) {
       const configRef = ref(
         db,
@@ -1375,8 +1391,23 @@ async function loadConfigs() {
       const snapshot = await get(configRef);
 
       if (snapshot.exists()) {
+        savedSections.add(section);
         applyConfig(section, snapshot.val());
       }
+    }
+    // Si es una cuenta antigua sin mapa de módulos, activa solo las secciones que ya tienen datos.
+    if (!modulesSnapshot.exists()) {
+      document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+        item.checked = savedSections.has(item.dataset.module);
+      });
+      if (savedSections.size) {
+        const inferred = {};
+        document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+          inferred[item.dataset.module] = item.checked;
+        });
+        await set(ref(db, "users/" + currentUser.uid + "/configs/modules"), inferred);
+      }
+      updateCount();
     }
   } catch (error) {
     console.error(error);
@@ -1554,6 +1585,34 @@ document.getElementById("embedColorText").addEventListener("change", event => {
     updateEmbedPreview();
   }
 });
+async function refreshBotStatus() {
+  const status = document.getElementById("botStatus");
+  const detail = document.getElementById("botStatusDetail");
+  try {
+    const response = await fetch("https://fourthstreet.onrender.com/health", { cache: "no-store" });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+    if (data.botReady && data.firebaseReady && data.configLoaded) {
+      status.textContent = "Conectado";
+      detail.textContent = "bot activo; Firebase conectado; configuración leída.";
+    } else {
+      status.textContent = data.botReady ? "Revisar" : "Sin conexión";
+      const problems = [];
+      if (!data.botReady) problems.push("bot desconectado");
+      if (!data.firebaseReady) problems.push("Firebase no inicializado");
+      if (!data.configLoaded) problems.push("configuración no cargada");
+      if (data.missing?.length) problems.push("variables: " + data.missing.join(", "));
+      if (data.firebaseProject && data.firebaseProject !== "th-street-a49e8") problems.push("proyecto Firebase incorrecto: " + data.firebaseProject);
+      detail.textContent = problems.join(" · ") || "servicio activo; revisa /health para más detalles.";
+    }
+  } catch (error) {
+    status.textContent = "No disponible";
+    detail.textContent = "No se pudo consultar Render. Comprueba el servicio y su endpoint /health.";
+    console.warn("No se pudo consultar STREET CONTROL:", error);
+  }
+}
+refreshBotStatus();
+setInterval(refreshBotStatus, 30000);
 updateCount();
 updateEmbedPreview();
 updateWelcomePreview();
