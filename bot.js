@@ -27,6 +27,7 @@ if (!admin.apps.length && serviceAccount.project_id) {
 }
 const db = admin.apps.length ? admin.database() : null;
 let config = {};
+let firebaseConfigLoaded = false;
 let lastScheduledKey = "";
 
 const client = new Client({
@@ -240,6 +241,7 @@ client.once(Events.ClientReady, async readyClient => {
         activityRoleId: activities.roleId || "",
         timezone: activities.timezone || "America/Santiago"
       };
+      firebaseConfigLoaded = true;
       console.log("Configuracion recargada desde Firebase.");
     }, err => console.error("Error leyendo configuracion Firebase:", err.message));
   }
@@ -385,7 +387,14 @@ cron.schedule("* * * * *", async () => {
 
 const app = express();
 app.get("/", (_req, res) => res.sendFile(require("path").join(__dirname, "health.html")));
-app.get("/health", (_req, res) => res.json({ ok: true, botReady: client.isReady(), bot: client.user?.tag || null }));
+app.get("/health", (_req, res) => res.json({
+  ok: client.isReady(),
+  botReady: client.isReady(),
+  firebaseReady: Boolean(db),
+  configLoaded: firebaseConfigLoaded,
+  modules: config.modules || {},
+  bot: client.user?.tag || null
+}));
 app.listen(Number(process.env.PORT || 3000), () => console.log(`Health server en puerto ${process.env.PORT || 3000}`));
 
 client.login(process.env.DISCORD_TOKEN);
