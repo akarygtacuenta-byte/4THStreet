@@ -1592,15 +1592,16 @@ async function refreshBotStatus() {
     const response = await fetch("https://fourthstreet.onrender.com/health", { cache: "no-store" });
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
-    if (data.botReady && data.firebaseReady && data.configLoaded) {
+    if (data.botReady && data.firebaseReady && data.configLoaded && data.configHasSections) {
       status.textContent = "Conectado";
-      detail.textContent = "bot activo; Firebase conectado; configuración leída.";
+      detail.textContent = "bot activo; Firebase conectado; configuraciones encontradas.";
     } else {
       status.textContent = data.botReady ? "Revisar" : "Sin conexión";
       const problems = [];
       if (!data.botReady) problems.push("bot desconectado");
       if (!data.firebaseReady) problems.push("Firebase no inicializado");
       if (!data.configLoaded) problems.push("configuración no cargada");
+      if (data.configLoaded && !data.configHasSections) problems.push("no hay configuraciones para OWNER_UID; copia el UID mostrado arriba a Render");
       if (data.missing?.length) problems.push("variables: " + data.missing.join(", "));
       if (data.firebaseProject && data.firebaseProject !== "th-street-a49e8") problems.push("proyecto Firebase incorrecto: " + data.firebaseProject);
       detail.textContent = problems.join(" · ") || "servicio activo; revisa /health para más detalles.";
