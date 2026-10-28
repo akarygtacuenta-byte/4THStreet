@@ -57,9 +57,16 @@ const commands = [
 ].map(c => c.toJSON());
 
 async function registerCommands() {
-  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
-  await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands });
-  console.log("Comandos slash registrados.");
+  const missing = ["DISCORD_TOKEN", "CLIENT_ID", "GUILD_ID"].filter(key => !process.env[key]?.trim());
+  if (missing.length) {
+    throw new Error(`Faltan variables de Render para registrar comandos: ${missing.join(", ")}`);
+  }
+  const clientId = process.env.CLIENT_ID.trim();
+  const guildId = process.env.GUILD_ID.trim();
+  console.log(`Registrando ${commands.length} comandos slash en el servidor ${guildId} para la aplicacion ${clientId}...`);
+  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN.trim());
+  const result = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+  console.log(`Comandos slash registrados correctamente: ${Array.isArray(result) ? result.length : commands.length}.`);
 }
 
 function interpolate(template, member) {
@@ -98,7 +105,14 @@ async function publishTicketPanel(interaction) {
 
 client.once(Events.ClientReady, async readyClient => {
   console.log(`Bot conectado como ${readyClient.user.tag}`);
-  try { await registerCommands(); } catch (e) { console.error("No se pudieron registrar comandos:", e.message); }
+  try {
+    await registerCommands();
+  } catch (e) {
+    console.error("ERROR REGISTRANDO COMANDOS SLASH:", e?.status ? `HTTP ${e.status}` : "", e?.message || e);
+    if (e?.status === 401) console.error("Revisa DISCORD_TOKEN: el token del bot no es valido.");
+    if (e?.status === 403) console.error("Discord rechazo el registro. Comprueba que CLIENT_ID sea el Application ID y que el bot/app pertenezca a este servidor.");
+    if (e?.status === 404) console.error("No se encontro la aplicacion o el servidor. Revisa CLIENT_ID y GUILD_ID.");
+  }
   if (db) {
     const configsPath = `users/${process.env.OWNER_UID}/configs`;
     db.ref(configsPath).on("value", snap => {
