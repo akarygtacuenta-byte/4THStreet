@@ -199,7 +199,8 @@ client.once(Events.ClientReady, async readyClient => {
       const tickets = sections.tickets || {};
       const moderation = sections.moderation || {};
       const activities = sections.activities || {};
-      const logs = sections.logs || {};\n      const modules = sections.modules || {};
+      const logs = sections.logs || {};
+      const modules = sections.modules || {};
 
       // El panel web guarda cada modulo por separado en users/{uid}/configs.
       // Aqui se convierten esos campos al formato que utiliza el bot.
