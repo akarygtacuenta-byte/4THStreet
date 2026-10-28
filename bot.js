@@ -77,6 +77,25 @@ async function registerCommands() {
   console.log(`Comandos slash registrados correctamente: ${Array.isArray(result) ? result.length : commands.length}.`);
 }
 
+function chileTimestamp(date, time) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  const desiredUtc = Date.UTC(year, month - 1, day, hour, minute);
+  let candidate = desiredUtc;
+  for (let i = 0; i < 3; i++) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).formatToParts(new Date(candidate));
+    const value = Object.fromEntries(parts.map(p => [p.type, p.value]));
+    const representedUtc = Date.UTC(Number(value.year), Number(value.month) - 1, Number(value.day), Number(value.hour), Number(value.minute));
+    const difference = desiredUtc - representedUtc;
+    candidate += difference;
+    if (difference === 0) break;
+  }
+  return Math.floor(candidate / 1000);
+}
+
 function interpolate(template, member) {
   return String(template || "")
     .replaceAll("{usuario}", `<@${member.id}>`)
@@ -89,8 +108,10 @@ async function sendConfigured(channelId, text, member = null) {
   if (!channel || !channel.isTextBased()) return;
   await channel.send(member ? interpolate(text, member) : text).catch(err => console.error("No se pudo enviar mensaje:", err.message));
 }
-async function sendLog(text) {
-  if (config.modules?.logs && config.logsChannelId) await sendConfigured(config.logsChannelId, text);
+async function sendLog(text, type = "moderation") {
+  if (!config.modules?.logs || !config.logsChannelId) return;
+  if (config.logOptions && config.logOptions[type] === false) return;
+  await sendConfigured(config.logsChannelId, text);
 }
 async function publishTicketPanel(interaction) {
   const embed = new EmbedBuilder().setColor(config.embedColor || "#C1121F")
@@ -136,7 +157,7 @@ async function publishEvent(interaction) {
   const [year, month, day] = date.split("-").map(Number), check = new Date(Date.UTC(year, month - 1, day));
   if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day)
     return interaction.reply({ content: "La fecha indicada no existe.", ephemeral: true });
-  const timestamp = Math.floor(new Date(`${date}T${time}:00-03:00`).getTime() / 1000);
+  const timestamp = chileTimestamp(date, time);
   if (timestamp <= Math.floor(Date.now() / 1000)) return interaction.reply({ content: "La fecha y hora deben estar en el futuro (hora de Chile).", ephemeral: true });
   const eventKey = `sc_event_${Date.now().toString(36)}`;
   eventAttendance.set(eventKey, { yes: new Set(), no: new Set(), date, time });
@@ -169,17 +190,17 @@ client.once(Events.ClientReady, async readyClient => {
       const tickets = sections.tickets || {};
       const moderation = sections.moderation || {};
       const activities = sections.activities || {};
-      const logs = sections.logs || {};
+      const logs = sections.logs || {};\n      const modules = sections.modules || {};
 
       // El panel web guarda cada modulo por separado en users/{uid}/configs.
       // Aqui se convierten esos campos al formato que utiliza el bot.
       config = {
         modules: {
-          welcome: Boolean(welcome.channel),
-          tickets: Boolean(tickets.channel || tickets.title),
-          moderation: Boolean(moderation.antiSpam || moderation.linkFilter),
-          activities: Boolean(activities.channel && activities.message),
-          logs: Boolean(logs.channel && (logs.members || logs.messages || logs.moderation))
+          welcome: modules.welcome ?? Boolean(welcome.channel),
+          tickets: modules.tickets ?? Boolean(tickets.channel || tickets.title),
+          moderation: modules.moderation ?? Boolean(moderation.antiSpam || moderation.linkFilter),
+          activities: modules.activities ?? Boolean(activities.channel && activities.message),
+          logs: modules.logs ?? Boolean(logs.channel && (logs.members || logs.messages || logs.moderation))
         },
         welcomeChannelId: welcome.channel || "",
         goodbyeChannelId: welcome.channel || "",
@@ -189,13 +210,18 @@ client.once(Events.ClientReady, async readyClient => {
         ticketTitle: tickets.title || "CENTRO DE SOPORTE",
         ticketDescription: tickets.description || "Pulsa el boton para abrir un ticket privado.",
         ticketCategories: tickets.categories || "",
+        ticketCategoryId: tickets.categoryId || "",
+        supportRoleId: tickets.supportRoleId || "",
         logsChannelId: logs.channel || moderation.channel || "",
+        logOptions: { members: Boolean(logs.members), messages: Boolean(logs.messages), moderation: Boolean(logs.moderation) },
+        antiSpam: Boolean(moderation.antiSpam),
         blockLinks: Boolean(moderation.linkFilter),
         spamLimit: Number(moderation.spamLimit || 5),
         activityChannelId: activities.channel || "",
         activityTime1: activities.time1 || "14:00",
         activityTime2: activities.time2 || "21:00",
         activityMessage: activities.message || "",
+        activityRoleId: activities.roleId || "",
         timezone: activities.timezone || "America/Santiago"
       };
       console.log("Configuracion recargada desde Firebase.");
@@ -207,13 +233,13 @@ client.on(Events.GuildMemberAdd, async member => {
   if (config.modules?.welcome) {
     await sendConfigured(config.welcomeChannelId, config.welcomeMessage || "¡Bienvenido/a {usuario} a {servidor}!", member);
   }
-  await sendLog(`📥 **Entrada:** ${member.user.tag} (${member.id})`);
+  await sendLog(`📥 **Entrada:** ${member.user.tag} (${member.id})`, "members");
 });
 client.on(Events.GuildMemberRemove, async member => {
   if (config.modules?.welcome) {
     await sendConfigured(config.goodbyeChannelId, config.goodbyeMessage || "{usuario} ha salido del servidor.", member);
   }
-  await sendLog(`📤 **Salida:** ${member.user?.tag || member.id}`);
+  await sendLog(`📤 **Salida:** ${member.user?.tag || member.id}`, "members");
 });
 
 const spam = new Map();
@@ -223,7 +249,7 @@ client.on(Events.MessageCreate, async message => {
   const previous = spam.get(message.author.id) || [];
   const recent = previous.filter(t => now - t < 6000);
   recent.push(now); spam.set(message.author.id, recent);
-  if (recent.length >= Number(config.spamLimit || 5) && message.member?.moderatable) {
+  if (config.antiSpam && recent.length >= Number(config.spamLimit || 5) && message.member?.moderatable) {
     await message.member.timeout(60_000, "Antispam automatico").catch(() => {});
     await message.channel.send(`⚠️ ${message.author}, se detecto spam. Se aplico una pausa de 60 segundos.`).catch(() => {});
     await sendLog(`⚠️ Antispam: ${message.author.tag} recibio timeout de 60 segundos.`);
@@ -237,7 +263,7 @@ client.on(Events.MessageCreate, async message => {
 });
 
 client.on(Events.MessageDelete, async message => {
-  if (message.guild && !message.author?.bot) await sendLog(`🗑️ Mensaje eliminado en <#${message.channelId}>${message.author ? ` por ${message.author.tag}` : ""}.`);
+  if (message.guild && !message.author?.bot) await sendLog(`🗑️ Mensaje eliminado en <#${message.channelId}>${message.author ? ` por ${message.author.tag}` : ""}.`, "messages");
 });
 
 client.on(Events.InteractionCreate, async interaction => {
