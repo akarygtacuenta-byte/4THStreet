@@ -106,6 +106,28 @@ button {
 }
 
 /* PANEL */
+.field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.field-grid .field { min-width:0; }
+.field small.help { display:block; color:var(--muted); margin-top:7px; line-height:1.5; }
+.embed-preview { overflow:hidden; border:1px solid var(--line); border-left:4px solid var(--embed-color,#c1121f); background:#0c111a; border-radius:10px; padding:18px; margin-top:18px; }
+.embed-preview h3 { margin:0 0 10px; font-size:16px; }
+.embed-preview p { color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6; }
+.color-field { display:flex; gap:12px; align-items:center; }
+.color-field input[type="color"] { width:52px; height:42px; padding:3px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); }
+.pill-status { font-size:11px; color:#ffb8be; background:#c1121f20; border:1px solid #c1121f55; padding:7px 10px; border-radius:20px; }
+@media (max-width:760px) {
+  #app { display:block; }
+  .sidebar { width:100%; padding:14px; border-right:0; border-bottom:1px solid var(--line); }
+  .brand { padding-bottom:14px; }
+  .navlabel { margin:14px 8px 8px; }
+  .nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .nav button { padding:10px; font-size:12px; }
+  .topbar { padding:0 16px; gap:10px; }
+  .content { padding:18px; }
+  .field-grid { grid-template-columns:1fr; }
+  .user { gap:7px; }
+  .user #userName { max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+}
 
 #app {
   min-height: 100vh;
@@ -466,6 +488,7 @@ main {
       <button data-page="tickets">▤ Tickets</button>
       <button data-page="moderation">⬡ Moderación</button>
       <button data-page="activities">◷ Actividades</button>
+      <button data-page="embeds">▣ Embeds programados</button>
       <button data-page="logs">≋ Registros</button>
     </nav>
 
@@ -503,7 +526,7 @@ main {
 
           <div class="card">
             <small>Módulos activos</small>
-            <div class="stat" id="activeCount">4 / 5</div>
+            <div class="stat" id="activeCount">4 / 6</div>
           </div>
 
           <div class="card">
@@ -558,6 +581,14 @@ main {
                 <small>Anuncios y recordatorios</small>
               </div>
               <input type="checkbox" class="toggle module-toggle" data-module="activities" checked>
+            </div>
+
+            <div class="module">
+              <div class="module-info">
+                <strong>Embeds programados</strong>
+                <small>Mensajes automáticos con diseño</small>
+              </div>
+              <input type="checkbox" class="toggle module-toggle" data-module="embeds">
             </div>
 
             <div class="module">
@@ -700,6 +731,12 @@ main {
             <input type="checkbox" id="antiSpam" class="toggle">
           </div>
 
+          <div class="field">
+            <label>Límite de mensajes repetidos para antispam</label>
+            <input type="number" id="spamLimit" min="3" max="20" value="5">
+            <small class="help">Cuántos mensajes seguidos activa el filtro antispam.</small>
+          </div>
+
           <div class="module">
             <div class="module-info">
               <strong>Filtro de enlaces</strong>
@@ -771,6 +808,76 @@ main {
 
         </div>
 
+      </section>
+
+      <!-- EMBEDS PROGRAMADOS -->
+
+      <section class="page" id="page-embeds">
+        <div class="eyebrow">MENSAJES AUTOMÁTICOS</div>
+        <div class="heading">
+          <h1>Embeds programados</h1>
+          <p>Crea un mensaje con diseño y decide cada cuánto se publica en tu servidor.</p>
+        </div>
+
+        <div class="grid maincols">
+          <div class="card">
+            <h3>Contenido del embed</h3>
+            <div class="field">
+              <label>Canal de publicación</label>
+              <input id="embedChannel" placeholder="ID del canal de Discord">
+            </div>
+            <div class="field">
+              <label>Título</label>
+              <input id="embedTitle" maxlength="256" placeholder="Ej. Aviso de la comunidad">
+            </div>
+            <div class="field">
+              <label>Descripción del mensaje</label>
+              <textarea id="embedDescription" maxlength="4000" placeholder="Escribe aquí el contenido del mensaje..."></textarea>
+            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label>Color del embed</label>
+                <div class="color-field">
+                  <input type="color" id="embedColor" value="#c1121f" aria-label="Color del embed">
+                  <input id="embedColorText" value="#C1121F" maxlength="7" aria-label="Código hexadecimal">
+                </div>
+              </div>
+              <div class="field">
+                <label>Intervalo de publicación</label>
+                <div class="field-grid">
+                  <input type="number" id="embedInterval" min="1" max="10080" value="60">
+                  <select id="embedUnit">
+                    <option value="minutes">Minutos</option>
+                    <option value="hours">Horas</option>
+                    <option value="days">Días</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="savebar">
+              <small>El bot revisa el horario automáticamente cada minuto.</small>
+              <button class="btn primary saveBtn" data-config="embeds">Guardar embed</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Vista previa</h3>
+            <p><small>Así se verá el mensaje dentro de Discord.</small></p>
+            <div class="embed-preview" id="embedPreview">
+              <h3 id="embedPreviewTitle">Título del mensaje</h3>
+              <p id="embedPreviewDescription">La descripción del embed aparecerá aquí.</p>
+              <small>STREET CONTROL</small>
+            </div>
+            <div class="module" style="margin-top:20px">
+              <div class="module-info">
+                <strong>Publicación automática</strong>
+                <small>Actívala en “Módulos del bot” del resumen.</small>
+              </div>
+              <span class="pill-status">Controlado desde Resumen</span>
+            </div>
+            <p><small>El intervalo mínimo es 1 minuto. Si el bot está desconectado, no podrá publicar mientras esté fuera de línea.</small></p>
+          </div>
+        </div>
       </section>
 
       <!-- REGISTROS -->
@@ -958,6 +1065,7 @@ const labels = {
   tickets: "Tickets",
   moderation: "Moderación",
   activities: "Actividades",
+  embeds: "Embeds programados",
   logs: "Registros"
 };
 
@@ -1038,6 +1146,7 @@ function getConfigValues() {
     moderation: {
       channel: document.getElementById("moderationChannel").value,
       antiSpam: document.getElementById("antiSpam").checked,
+      spamLimit: Number(document.getElementById("spamLimit").value || 5),
       linkFilter: document.getElementById("linkFilter").checked
     },
 
@@ -1048,6 +1157,15 @@ function getConfigValues() {
       message: document.getElementById("activityMessage").value,
       roleId: document.getElementById("activityRole").value.trim(),
       timezone: "America/Santiago"
+    },
+
+    embeds: {
+      channel: document.getElementById("embedChannel").value.trim(),
+      title: document.getElementById("embedTitle").value.trim(),
+      description: document.getElementById("embedDescription").value,
+      color: document.getElementById("embedColor").value,
+      interval: Math.min(10080, Math.max(1, Number(document.getElementById("embedInterval").value || 60))),
+      unit: document.getElementById("embedUnit").value
     },
 
     logs: {
@@ -1108,6 +1226,7 @@ async function loadConfigs() {
       "tickets",
       "moderation",
       "activities",
+      "embeds",
       "logs"
     ];
 
@@ -1151,7 +1270,17 @@ function applyConfig(section, data) {
     moderation: {
       channel: "moderationChannel",
       antiSpam: "antiSpam",
+      spamLimit: "spamLimit",
       linkFilter: "linkFilter"
+    },
+
+    embeds: {
+      channel: "embedChannel",
+      title: "embedTitle",
+      description: "embedDescription",
+      color: "embedColor",
+      interval: "embedInterval",
+      unit: "embedUnit"
     },
 
     activities: {
@@ -1187,7 +1316,30 @@ function applyConfig(section, data) {
   }
 }
 
+function updateEmbedPreview() {
+  const title = document.getElementById("embedTitle").value.trim();
+  const description = document.getElementById("embedDescription").value.trim();
+  const color = document.getElementById("embedColor").value;
+  document.getElementById("embedPreviewTitle").textContent = title || "Título del mensaje";
+  document.getElementById("embedPreviewDescription").textContent = description || "La descripción del embed aparecerá aquí.";
+  document.getElementById("embedPreview").style.setProperty("--embed-color", color);
+  document.getElementById("embedColorText").value = color.toUpperCase();
+}
+["embedTitle", "embedDescription", "embedColor"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updateEmbedPreview);
+});
+document.getElementById("embedColorText").addEventListener("change", event => {
+  const value = event.target.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+    document.getElementById("embedColor").value = value;
+    updateEmbedPreview();
+  } else {
+    showToast("El color debe usar formato hexadecimal, por ejemplo #C1121F.");
+    updateEmbedPreview();
+  }
+});
 updateCount();
+updateEmbedPreview();
 
 </script>
 
