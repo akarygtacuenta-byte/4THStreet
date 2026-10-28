@@ -20,6 +20,9 @@ try { serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "
 catch (e) { console.error("FIREBASE_SERVICE_ACCOUNT_JSON no es JSON valido."); process.exit(1); }
 
 if (!admin.apps.length && serviceAccount.project_id) {
+  if (serviceAccount.project_id !== "th-street-a49e8") {
+    console.error(`[FIREBASE] ADVERTENCIA: la cuenta de servicio pertenece al proyecto "${serviceAccount.project_id}", pero el panel web usa "th-street-a49e8". Debes usar una cuenta de servicio del mismo proyecto que el panel.`);
+  }
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: process.env.FIREBASE_DATABASE_URL
@@ -69,15 +72,22 @@ const commands = [
 ].map(c => c.toJSON());
 
 async function registerCommands() {
-  const missing = ["DISCORD_TOKEN", "CLIENT_ID", "GUILD_ID"].filter(key => !process.env[key]?.trim());
+  const missing = ["DISCORD_TOKEN", "CLIENT_ID"].filter(key => !process.env[key]?.trim());
   if (missing.length) {
     throw new Error(`Faltan variables de Render para registrar comandos: ${missing.join(", ")}`);
   }
   const clientId = process.env.CLIENT_ID.trim();
-  const guildId = process.env.GUILD_ID.trim();
-  console.log(`Registrando ${commands.length} comandos slash en el servidor ${guildId} para la aplicacion ${clientId}...`);
+  const guildId = process.env.GUILD_ID?.trim();
+  const commandRoute = guildId
+    ? Routes.applicationGuildCommands(clientId, guildId)
+    : Routes.applicationCommands(clientId);
+  if (guildId) {
+    console.log(`Registrando ${commands.length} comandos slash en el servidor ${guildId} para la aplicacion ${clientId}...`);
+  } else {
+    console.warn("[CONFIG] GUILD_ID no esta configurado. Se registraran comandos globales; pueden tardar en aparecer. Configura GUILD_ID en Render para registro inmediato.");
+  }
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN.trim());
-  const result = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+  const result = await rest.put(commandRoute, { body: commands });
   console.log(`Comandos slash registrados correctamente: ${Array.isArray(result) ? result.length : commands.length}.`);
 }
 
@@ -170,6 +180,7 @@ async function publishEvent(interaction) {
   const timestamp = chileTimestamp(date, time);
   if (timestamp <= Math.floor(Date.now() / 1000)) return interaction.reply({ content: "La fecha y hora deben estar en el futuro (hora de Chile).", ephemeral: true });
   const eventKey = `sc_event_${Date.now().toString(36)}`;
+  const eventGuildId = process.env.GUILD_ID?.trim() || interaction.guildId;
   eventAttendance.set(eventKey, { yes: new Set(), no: new Set(), date, time });
   const embed = new EmbedBuilder().setColor(config.embedColor || "#C1121F").setTitle(`📅 ${title}`).setDescription(description)
     .addFields({ name: "📆 Fecha", value: date, inline: true }, { name: "🕒 Hora de Chile", value: time, inline: true }, { name: "🙋 Asistencia", value: "Aún no hay confirmaciones.", inline: false })
@@ -181,7 +192,7 @@ async function publishEvent(interaction) {
   const eventData = { title, description, date, time, channelId: channel.id, messageId: eventMessage.id, roleId: role?.id || null, yes: [], no: [] };
   eventAttendance.set(eventKey, { ...eventData, yes: new Set(), no: new Set() });
   if (db) {
-    await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/events/${eventKey}`).set(eventData)
+    await db.ref(`users/${process.env.OWNER_UID}/guilds/${eventGuildId}/events/${eventKey}`).set(eventData)
       .catch(err => console.error("No se pudo guardar el evento en Firebase:", err.message));
   }
   await interaction.reply({ content: `Evento publicado en ${channel}. Los miembros pueden confirmar asistencia con los botones.`, ephemeral: true });
@@ -202,8 +213,10 @@ client.once(Events.ClientReady, async readyClient => {
     console.error("[FIREBASE] Admin SDK no inicializado. Comprueba FIREBASE_SERVICE_ACCOUNT_JSON (JSON de cuenta de servicio) y FIREBASE_DATABASE_URL en Render.");
   }
   if (db) {
-    const savedLastEmbed = await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/embedScheduler/lastSentAt`).once("value").catch(() => null);
-    lastEmbedSentAt = Number(savedLastEmbed?.val() || 0);
+    if (process.env.GUILD_ID?.trim()) {
+      const savedLastEmbed = await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID.trim()}/embedScheduler/lastSentAt`).once("value").catch(() => null);
+      lastEmbedSentAt = Number(savedLastEmbed?.val() || 0);
+    }
     const configsPath = `users/${process.env.OWNER_UID}/configs`;
     db.ref(configsPath).on("value", snap => {
       const sections = snap.val() || {};
@@ -261,7 +274,9 @@ client.once(Events.ClientReady, async readyClient => {
         timezone: activities.timezone || "America/Santiago"
       };
       firebaseConfigLoaded = true;
-      console.log("Configuracion recargada desde Firebase.");
+      const sectionNames = Object.keys(sections).filter(name => name !== "modules");
+      console.log("Configuracion recargada desde Firebase. Secciones: " + (sectionNames.join(", ") || "ninguna"));
+      if (!sectionNames.length) console.warn("[FIREBASE] No se encontraron configuraciones para OWNER_UID. Comprueba que sea exactamente el UID que muestra el panel al iniciar sesion.");
     }, err => console.error("Error leyendo configuracion Firebase:", err.message));
   }
 });
@@ -374,7 +389,8 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isButton() && /^(sc_event_[a-z0-9]+)_(yes|no)$/.test(interaction.customId)) {
       const match = interaction.customId.match(/^(sc_event_[a-z0-9]+)_(yes|no)$/);
       let event = eventAttendance.get(match[1]);
-      const eventRef = db ? db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/events/${match[1]}`) : null;
+      const eventGuildId = process.env.GUILD_ID?.trim() || interaction.guildId;
+      const eventRef = db ? db.ref(`users/${process.env.OWNER_UID}/guilds/${eventGuildId}/events/${match[1]}`) : null;
       if (!event && eventRef) {
         const snapshot = await eventRef.once("value");
         const saved = snapshot.val();
@@ -454,7 +470,7 @@ cron.schedule("* * * * *", async () => {
           await channel.send({ embeds: [embed] });
           lastEmbedScheduleKey = scheduleKey;
           lastEmbedSentAt = Date.now();
-          if (db) await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/embedScheduler/lastSentAt`).set(lastEmbedSentAt)
+          if (db && process.env.GUILD_ID?.trim()) await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID.trim()}/embedScheduler/lastSentAt`).set(lastEmbedSentAt)
             .catch(err => console.error("[EMBEDS] No se pudo guardar la última publicación:", err.message));
           console.log("[EMBEDS] Mensaje programado publicado correctamente.");
         }
@@ -467,14 +483,24 @@ cron.schedule("* * * * *", async () => {
 
 const app = express();
 app.get("/", (_req, res) => res.sendFile(require("path").join(__dirname, "health.html")));
-app.get("/health", (_req, res) => res.json({
-  ok: client.isReady(),
-  botReady: client.isReady(),
-  firebaseReady: Boolean(db),
-  configLoaded: firebaseConfigLoaded,
-  modules: config.modules || {},
-  bot: client.user?.tag || null
-}));
+app.get("/health", (_req, res) => {
+  const missing = ["DISCORD_TOKEN", "CLIENT_ID", "OWNER_UID", "FIREBASE_DATABASE_URL", "FIREBASE_SERVICE_ACCOUNT_JSON"]
+    .filter(key => !process.env[key]?.trim());
+  if (!process.env.GUILD_ID?.trim()) missing.push("GUILD_ID (opcional: se usan comandos globales)");
+  res.json({
+    ok: client.isReady() && Boolean(db) && firebaseConfigLoaded,
+    botReady: client.isReady(),
+    firebaseReady: Boolean(db),
+    configLoaded: firebaseConfigLoaded,
+    configSections: Object.keys(config).filter(key => key !== "modules"),
+    modules: config.modules || {},
+    ownerUidConfigured: Boolean(process.env.OWNER_UID?.trim()),
+    guildIdConfigured: Boolean(process.env.GUILD_ID?.trim()),
+    missing,
+    firebaseProject: serviceAccount.project_id || null,
+    bot: client.user?.tag || null
+  });
+});
 app.listen(Number(process.env.PORT || 3000), () => console.log(`Health server en puerto ${process.env.PORT || 3000}`));
 
 client.login(process.env.DISCORD_TOKEN);
