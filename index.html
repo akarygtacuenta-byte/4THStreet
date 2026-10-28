@@ -33,11 +33,14 @@ import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/1
 
 // PASO: reemplaza estos valores por los de Firebase Console > Configuracion del proyecto > Tus apps web.
 const firebaseConfig = {
-  apiKey: "PEGA_AQUI_API_KEY",
-  authDomain: "PEGA_AQUI_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://PEGA_AQUI_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "PEGA_AQUI_PROJECT_ID",
-  appId: "PEGA_AQUI_APP_ID"
+  apiKey: "AIzaSyDxD_YRHUZIGxeQoHAHvuDtbdUSEM51rsA",
+  authDomain: "th-street-a49e8.firebaseapp.com",
+  databaseURL: "https://th-street-a49e8-default-rtdb.firebaseio.com",
+  projectId: "th-street-a49e8",
+  storageBucket: "th-street-a49e8.firebasestorage.app",
+  messagingSenderId: "92012313924",
+  appId: "1:92012313924:web:a314de725d90dd3b8beb11",
+  measurementId: "G-G5VRN265NH"
 };
 const firebaseReady = !Object.values(firebaseConfig).some(v => String(v).includes("PEGA_AQUI"));
 const app = initializeApp(firebaseConfig);
