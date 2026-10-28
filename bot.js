@@ -167,7 +167,13 @@ async function publishEvent(interaction) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(`${eventKey}_yes`).setLabel("Participaré").setEmoji("✅").setStyle(ButtonStyle.Success),
     new ButtonBuilder().setCustomId(`${eventKey}_no`).setLabel("No podré").setEmoji("❌").setStyle(ButtonStyle.Secondary));
-  await channel.send({ content: role ? `<@&${role.id}>` : undefined, embeds: [embed], components: [row], allowedMentions: { roles: role ? [role.id] : [] } });
+  const eventMessage = await channel.send({ content: role ? `<@&${role.id}>` : undefined, embeds: [embed], components: [row], allowedMentions: { roles: role ? [role.id] : [] } });
+  const eventData = { title, description, date, time, channelId: channel.id, messageId: eventMessage.id, roleId: role?.id || null, yes: [], no: [] };
+  eventAttendance.set(eventKey, { ...eventData, yes: new Set(), no: new Set() });
+  if (db) {
+    await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/events/${eventKey}`).set(eventData)
+      .catch(err => console.error("No se pudo guardar el evento en Firebase:", err.message));
+  }
   await interaction.reply({ content: `Evento publicado en ${channel}. Los miembros pueden confirmar asistencia con los botones.`, ephemeral: true });
   await sendLog(`📅 Evento creado por ${interaction.user.tag}: ${title} (${date} ${time})`);
 }
@@ -265,6 +271,13 @@ client.on(Events.MessageCreate, async message => {
 client.on(Events.MessageDelete, async message => {
   if (message.guild && !message.author?.bot) await sendLog(`🗑️ Mensaje eliminado en <#${message.channelId}>${message.author ? ` por ${message.author.tag}` : ""}.`, "messages");
 });
+client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+  if (!newMessage.guild || oldMessage.author?.bot || !config.logOptions?.messages) return;
+  if (oldMessage.content === newMessage.content || !oldMessage.content || !newMessage.content) return;
+  await sendLog(`✏️ Mensaje editado en <#${newMessage.channelId}> por ${newMessage.author?.tag || "usuario desconocido"}.
+**Antes:** ${oldMessage.content.slice(0, 700)}
+**Después:** ${newMessage.content.slice(0, 700)}`, "messages");
+});
 
 client.on(Events.InteractionCreate, async interaction => {
   try {
@@ -304,14 +317,28 @@ client.on(Events.InteractionCreate, async interaction => {
       return createTicket(interaction, category);
     }
     if (interaction.isButton() && /^(sc_event_[a-z0-9]+)_(yes|no)$/.test(interaction.customId)) {
-      const match = interaction.customId.match(/^(sc_event_[a-z0-9]+)_(yes|no)$/), event = eventAttendance.get(match[1]);
-      if (!event) return interaction.reply({ content: "Este evento ya no esta disponible tras un reinicio del bot.", ephemeral: true });
+      const match = interaction.customId.match(/^(sc_event_[a-z0-9]+)_(yes|no)$/);
+      let event = eventAttendance.get(match[1]);
+      const eventRef = db ? db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/events/${match[1]}`) : null;
+      if (!event && eventRef) {
+        const snapshot = await eventRef.once("value");
+        const saved = snapshot.val();
+        if (saved) {
+          event = { ...saved, yes: new Set(saved.yes || []), no: new Set(saved.no || []) };
+          eventAttendance.set(match[1], event);
+        }
+      }
+      if (!event) return interaction.reply({ content: "No se encontró el evento guardado. Publica uno nuevo.", ephemeral: true });
       const mine = match[2] === "yes" ? event.yes : event.no, other = match[2] === "yes" ? event.no : event.yes;
       if (mine.has(interaction.user.id)) mine.delete(interaction.user.id); else { mine.add(interaction.user.id); other.delete(interaction.user.id); }
       const embed = EmbedBuilder.from(interaction.message.embeds[0]).setFields(
         { name: "📆 Fecha", value: event.date, inline: true }, { name: "🕒 Hora de Chile", value: event.time, inline: true },
         { name: "🙋 Asistencia", value: `✅ Participarán: ${event.yes.size}\\n❌ No podrán: ${event.no.size}`, inline: false });
       await interaction.update({ embeds: [embed] });
+      if (eventRef) {
+        await eventRef.update({ yes: [...event.yes], no: [...event.no] })
+          .catch(err => console.error("No se pudo guardar la asistencia en Firebase:", err.message));
+      }
       return;
     }
     if (interaction.isButton() && interaction.customId === "sc_ticket_close") {
