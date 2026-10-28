@@ -40,7 +40,7 @@ const client = new Client({
 });
 
 const commands = [
-  new SlashCommandBuilder().setName("panel-tickets").setDescription("Publica el panel de tickets en este canal")
+  new SlashCommandBuilder().setName("panel-tickets").setDescription("Publica el panel configurado de tickets")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
   new SlashCommandBuilder().setName("ping").setDescription("Comprueba si el bot responde"),
   new SlashCommandBuilder().setName("limpiar").setDescription("Borra mensajes recientes")
@@ -190,6 +190,9 @@ client.once(Events.ClientReady, async readyClient => {
     if (e?.status === 401) console.error("Revisa DISCORD_TOKEN: el token del bot no es valido.");
     if (e?.status === 403) console.error("Discord rechazo el registro. Comprueba que CLIENT_ID sea el Application ID y que el bot/app pertenezca a este servidor.");
     if (e?.status === 404) console.error("No se encontro la aplicacion o el servidor. Revisa CLIENT_ID y GUILD_ID.");
+  }
+  if (!db) {
+    console.error("[FIREBASE] Admin SDK no inicializado. Comprueba FIREBASE_SERVICE_ACCOUNT_JSON (JSON de cuenta de servicio) y FIREBASE_DATABASE_URL en Render.");
   }
   if (db) {
     const configsPath = `users/${process.env.OWNER_UID}/configs`;
