@@ -26,7 +26,7 @@ if (!admin.apps.length && serviceAccount.project_id) {
   });
 }
 const db = admin.apps.length ? admin.database() : null;
-const configPath = `users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/config`;
+const configsPath = `users/${process.env.OWNER_UID}/configs`;
 let config = {};
 let lastScheduledKey = "";
 
