@@ -612,6 +612,12 @@ main {
             <p><small>UID de Firebase para Render (OWNER_UID): <code id="firebaseUid">Inicia sesión</code></small></p>
             <button class="btn" id="copyUidBtn" type="button">Copiar UID para Render</button>
             <p><small>En Render, OWNER_UID debe ser exactamente este UID. El proyecto Firebase del bot también debe coincidir con el del panel.</small></p>
+            <div class="field" style="margin-top:14px">
+              <label>URL pública de tu servicio STREET CONTROL en Render</label>
+              <input id="renderServiceUrl" type="url" placeholder="https://tu-servicio.onrender.com">
+              <small>Usa la URL real de tu servicio, sin añadir /health. Se guarda en este navegador.</small>
+            </div>
+            <button class="btn" id="saveRenderUrlBtn" type="button">Guardar URL y comprobar conexión</button>
           </div>
 
         </div>
@@ -1585,11 +1591,34 @@ document.getElementById("embedColorText").addEventListener("change", event => {
     updateEmbedPreview();
   }
 });
+const RENDER_URL_KEY = "streetControlRenderServiceUrl";
+function normalizeRenderUrl(value) {
+  return String(value || "").trim().replace(/\\/+$/, "").replace(/\\/health$/, "");
+}
+const renderUrlInput = document.getElementById("renderServiceUrl");
+const savedRenderUrl = normalizeRenderUrl(localStorage.getItem(RENDER_URL_KEY) || "");
+if (renderUrlInput) renderUrlInput.value = savedRenderUrl;
+document.getElementById("saveRenderUrlBtn").addEventListener("click", () => {
+  const value = normalizeRenderUrl(renderUrlInput.value);
+  if (!/^https:\\/\\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(value)) {
+    showToast("Escribe la URL completa de Render, por ejemplo https://mi-bot.onrender.com");
+    return;
+  }
+  localStorage.setItem(RENDER_URL_KEY, value);
+  showToast("URL guardada. Comprobando conexión…");
+  refreshBotStatus();
+});
 async function refreshBotStatus() {
   const status = document.getElementById("botStatus");
   const detail = document.getElementById("botStatusDetail");
+  const baseUrl = normalizeRenderUrl(localStorage.getItem(RENDER_URL_KEY) || renderUrlInput?.value || "");
+  if (!baseUrl) {
+    status.textContent = "Configurar URL";
+    detail.textContent = "Introduce la URL real del servicio STREET CONTROL en Render para comprobar el estado.";
+    return;
+  }
   try {
-    const response = await fetch("https://fourthstreet.onrender.com/health", { cache: "no-store" });
+    const response = await fetch(baseUrl + "/health", { cache: "no-store" });
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
     if (data.botReady && data.firebaseReady && data.configLoaded && data.configHasSections) {
