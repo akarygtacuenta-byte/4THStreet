@@ -142,7 +142,10 @@ async function createTicket(interaction, category) {
   if (config.ticketCategoryId) options.parent = config.ticketCategoryId;
   const channel = await interaction.guild.channels.create(options);
   const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId("sc_ticket_close").setLabel("Cerrar ticket").setEmoji("🔒").setStyle(ButtonStyle.Secondary));
-  await channel.send({ content: `<@!${interaction.user.id}> ${config.supportRoleId ? `<@&${config.supportRoleId}>` : ""}\\n**Categoria:** ${category}\\n\\n${config.ticketOpenMessage || "Describe tu consulta aqui y el equipo te ayudara."}`, components: [row] });
+  await channel.send({ content: `<@!${interaction.user.id}> ${config.supportRoleId ? `<@&${config.supportRoleId}>` : ""}
+**Categoria:** ${category}
+
+${config.ticketOpenMessage || "Describe tu consulta aqui y el equipo te ayudara."}`, components: [row] });
   await interaction.reply({ content: `Ticket de **${category}** creado: ${channel}`, ephemeral: true });
   await sendLog(`🎫 Ticket abierto por ${interaction.user.tag} • ${category}: ${channel}`);
 }
@@ -333,7 +336,8 @@ client.on(Events.InteractionCreate, async interaction => {
       if (mine.has(interaction.user.id)) mine.delete(interaction.user.id); else { mine.add(interaction.user.id); other.delete(interaction.user.id); }
       const embed = EmbedBuilder.from(interaction.message.embeds[0]).setFields(
         { name: "📆 Fecha", value: event.date, inline: true }, { name: "🕒 Hora de Chile", value: event.time, inline: true },
-        { name: "🙋 Asistencia", value: `✅ Participarán: ${event.yes.size}\\n❌ No podrán: ${event.no.size}`, inline: false });
+        { name: "🙋 Asistencia", value: `✅ Participarán: ${event.yes.size}
+❌ No podrán: ${event.no.size}`, inline: false });
       await interaction.update({ embeds: [embed] });
       if (eventRef) {
         await eventRef.update({ yes: [...event.yes], no: [...event.no] })
