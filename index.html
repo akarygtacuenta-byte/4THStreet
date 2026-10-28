@@ -747,6 +747,10 @@ main {
               </div>
             </div>
           </div>
+          <div class="card" style="margin-top:16px;border-color:#8a5b24">
+            <h3>Importante: publicar el panel en Discord</h3>
+            <p><small>Guardar esta configuración activa el módulo, pero no publica automáticamente el panel. Después de guardar, entra a tu servidor y ejecuta <strong>/panel-tickets</strong> con permisos de administrador para enviar el panel al canal configurado.</small></p>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="tickets">
@@ -1313,7 +1317,19 @@ async function saveConfig(section) {
 
     await set(configRef, values[section]);
 
-    showToast("Configuración guardada en Firebase.");
+    // Guardar una sección también la activa para que el bot pueda ejecutarla.
+    const moduleToggle = document.querySelector('.module-toggle[data-module="' + section + '"]');
+    if (moduleToggle) {
+      moduleToggle.checked = true;
+      const modules = {};
+      document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+        modules[item.dataset.module] = item.checked;
+      });
+      await set(ref(db, "users/" + currentUser.uid + "/configs/modules"), modules);
+      updateCount();
+    }
+
+    showToast("Configuración guardada y módulo activado en Firebase.");
   } catch (error) {
     console.error(error);
     showToast("Error al guardar. Revisa las reglas de Firebase.");
