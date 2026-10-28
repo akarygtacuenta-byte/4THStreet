@@ -26,7 +26,6 @@ if (!admin.apps.length && serviceAccount.project_id) {
   });
 }
 const db = admin.apps.length ? admin.database() : null;
-const configPath = `users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/config`;
 let config = {};
 let lastScheduledKey = "";
 
@@ -87,16 +86,56 @@ async function publishTicketPanel(interaction) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId("sc_ticket_open").setLabel("Abrir ticket").setEmoji("🎫").setStyle(ButtonStyle.Danger)
   );
-  await interaction.channel.send({ embeds: [embed], components: [row] });
-  await interaction.reply({ content: "Panel de tickets publicado.", ephemeral: true });
+  const target = config.ticketChannelId
+    ? await client.channels.fetch(config.ticketChannelId).catch(() => null)
+    : interaction.channel;
+  if (!target || !target.isTextBased()) {
+    return interaction.reply({ content: "No encuentro el canal configurado para el panel. Revisa el ID en la web.", ephemeral: true });
+  }
+  await target.send({ embeds: [embed], components: [row] });
+  await interaction.reply({ content: `Panel de tickets publicado en ${target}.`, ephemeral: true });
 }
 
 client.once(Events.ClientReady, async readyClient => {
   console.log(`Bot conectado como ${readyClient.user.tag}`);
   try { await registerCommands(); } catch (e) { console.error("No se pudieron registrar comandos:", e.message); }
   if (db) {
-    db.ref(configPath).on("value", snap => {
-      config = snap.val() || {};
+    const configsPath = `users/${process.env.OWNER_UID}/configs`;
+    db.ref(configsPath).on("value", snap => {
+      const sections = snap.val() || {};
+      const welcome = sections.welcome || {};
+      const tickets = sections.tickets || {};
+      const moderation = sections.moderation || {};
+      const activities = sections.activities || {};
+      const logs = sections.logs || {};
+
+      // El panel web guarda cada modulo por separado en users/{uid}/configs.
+      // Aqui se convierten esos campos al formato que utiliza el bot.
+      config = {
+        modules: {
+          welcome: Boolean(welcome.channel),
+          tickets: Boolean(tickets.channel || tickets.title),
+          moderation: Boolean(moderation.antiSpam || moderation.linkFilter),
+          activities: Boolean(activities.channel && activities.message),
+          logs: Boolean(logs.channel && (logs.members || logs.messages || logs.moderation))
+        },
+        welcomeChannelId: welcome.channel || "",
+        goodbyeChannelId: welcome.channel || "",
+        welcomeMessage: welcome.welcomeMessage || "",
+        goodbyeMessage: welcome.goodbyeMessage || "",
+        ticketChannelId: tickets.channel || "",
+        ticketTitle: tickets.title || "CENTRO DE SOPORTE",
+        ticketDescription: tickets.description || "Pulsa el boton para abrir un ticket privado.",
+        ticketCategories: tickets.categories || "",
+        logsChannelId: logs.channel || moderation.channel || "",
+        blockLinks: Boolean(moderation.linkFilter),
+        spamLimit: Number(moderation.spamLimit || 5),
+        activityChannelId: activities.channel || "",
+        activityTime1: activities.time1 || "14:00",
+        activityTime2: activities.time2 || "21:00",
+        activityMessage: activities.message || "",
+        timezone: activities.timezone || "America/Santiago"
+      };
       console.log("Configuracion recargada desde Firebase.");
     }, err => console.error("Error leyendo configuracion Firebase:", err.message));
   }
