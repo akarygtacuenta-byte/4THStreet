@@ -31,6 +31,7 @@ if (!admin.apps.length && serviceAccount.project_id) {
 const db = admin.apps.length ? admin.database() : null;
 let config = {};
 let firebaseConfigLoaded = false;
+let configSectionNames = [];
 let lastScheduledKey = "";
 let lastEmbedScheduleKey = "";
 let lastEmbedSentAt = 0;
@@ -274,9 +275,9 @@ client.once(Events.ClientReady, async readyClient => {
         timezone: activities.timezone || "America/Santiago"
       };
       firebaseConfigLoaded = true;
-      const sectionNames = Object.keys(sections).filter(name => name !== "modules");
-      console.log("Configuracion recargada desde Firebase. Secciones: " + (sectionNames.join(", ") || "ninguna"));
-      if (!sectionNames.length) console.warn("[FIREBASE] No se encontraron configuraciones para OWNER_UID. Comprueba que sea exactamente el UID que muestra el panel al iniciar sesion.");
+      configSectionNames = Object.keys(sections).filter(name => name !== "modules");
+      console.log("Configuracion recargada desde Firebase. Secciones: " + (configSectionNames.join(", ") || "ninguna"));
+      if (!configSectionNames.length) console.warn("[FIREBASE] No se encontraron configuraciones para OWNER_UID. Comprueba que sea exactamente el UID que muestra el panel al iniciar sesion.");
     }, err => console.error("Error leyendo configuracion Firebase:", err.message));
   }
 });
@@ -494,11 +495,12 @@ app.get("/health", (_req, res) => {
     .filter(key => !process.env[key]?.trim());
   if (!process.env.GUILD_ID?.trim()) missing.push("GUILD_ID (opcional: se usan comandos globales)");
   res.json({
-    ok: client.isReady() && Boolean(db) && firebaseConfigLoaded,
+    ok: client.isReady() && Boolean(db) && firebaseConfigLoaded && configSectionNames.length > 0,
     botReady: client.isReady(),
     firebaseReady: Boolean(db),
     configLoaded: firebaseConfigLoaded,
-    configSections: Object.keys(config).filter(key => key !== "modules"),
+    configSections: configSectionNames,
+    configHasSections: configSectionNames.length > 0,
     modules: config.modules || {},
     ownerUidConfigured: Boolean(process.env.OWNER_UID?.trim()),
     guildIdConfigured: Boolean(process.env.GUILD_ID?.trim()),
