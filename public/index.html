@@ -680,6 +680,12 @@ main {
           </div>
 
           <div class="field">
+            <label>Mensaje dentro del ticket</label>
+            <textarea id="ticketOpenMessage" placeholder="Describe tu consulta aquí y el equipo te ayudará."></textarea>
+            <small class="help">Este mensaje aparece cuando un usuario abre un ticket privado.</small>
+          </div>
+
+          <div class="field">
             <label>Categorías de tickets</label>
             <input id="ticketCategories" value="Cúpula, Postulación, Solicitud de Rango">
           </div>
@@ -1138,6 +1144,7 @@ function getConfigValues() {
       channel: document.getElementById("ticketChannel").value.trim(),
       title: document.getElementById("ticketTitle").value,
       description: document.getElementById("ticketDescription").value,
+      openMessage: document.getElementById("ticketOpenMessage").value,
       categories: document.getElementById("ticketCategories").value,
       categoryId: document.getElementById("ticketCategoryId").value.trim(),
       supportRoleId: document.getElementById("supportRoleId").value.trim()
@@ -1262,6 +1269,7 @@ function applyConfig(section, data) {
       channel: "ticketChannel",
       title: "ticketTitle",
       description: "ticketDescription",
+      openMessage: "ticketOpenMessage",
       categories: "ticketCategories",
       categoryId: "ticketCategoryId",
       supportRoleId: "supportRoleId"
