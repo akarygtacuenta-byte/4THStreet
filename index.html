@@ -390,6 +390,8 @@ main {
   display: block;
 }
 
+.day-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.day-picker label{display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0b1019;font-size:12px}.day-picker input{accent-color:var(--red)}.discord-preview{display:flex;gap:12px;background:#202225;border-radius:8px;padding:14px;color:#dcddde}.discord-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#c1121f;font-weight:800}.discord-message{min-width:0;flex:1}.discord-message>strong{font-size:13px}.discord-message>strong small{font-weight:400;color:#aeb3ba;margin-left:6px}.preview-thumbnail{float:right;max-width:76px;max-height:76px;object-fit:cover;border-radius:6px;margin:4px 0 8px 10px}.preview-banner{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:5px;margin:12px 0}.preview-card{margin-top:16px}.welcome-preview{margin-top:10px}.embed-preview{border-left:4px solid var(--embed-color,#c1121f);background:#111827;padding:14px;border-radius:5px;overflow:hidden}.embed-preview h3{margin:0 0 8px}.embed-preview p{white-space:pre-wrap;overflow-wrap:anywhere}.embed-preview small{color:#9ca3af}
+
 @media(max-width: 900px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
@@ -640,6 +642,35 @@ main {
             <textarea id="goodbyeText">{usuario} ha salido del servidor. ¡Esperamos verte de nuevo!</textarea>
           </div>
 
+          <div class="field">
+            <label>URL de imagen/banner de bienvenida (opcional)</label>
+            <input id="welcomeImage" type="url" placeholder="https://ejemplo.com/banner.png">
+          </div>
+          <div class="field">
+            <label>URL de miniatura (opcional)</label>
+            <input id="welcomeThumbnail" type="url" placeholder="https://ejemplo.com/logo.png">
+          </div>
+          <div class="field">
+            <label>Color del embed de bienvenida</label>
+            <input id="welcomeColor" type="color" value="#c1121f">
+          </div>
+          <div class="card preview-card">
+            <h3>Vista previa de bienvenida</h3>
+            <p><small>Ejemplo aproximado de cómo aparecerá en Discord.</small></p>
+            <div class="discord-preview">
+              <div class="discord-avatar">SC</div>
+              <div class="discord-message">
+                <strong>STREET CONTROL <small>HOY</small></strong>
+                <div class="embed-preview welcome-preview" id="welcomePreview">
+                  <h3 id="welcomePreviewTitle">¡Bienvenido/a Usuario a STREET CONTROL!</h3>
+                  <p id="welcomePreviewDescription">Lee las normas y disfruta de la ciudad.</p>
+                  <img id="welcomePreviewThumbnail" class="preview-thumbnail hidden" alt="Miniatura de bienvenida">
+                  <img id="welcomePreviewImage" class="preview-banner hidden" alt="Banner de bienvenida">
+                  <small>STREET CONTROL • Bienvenida</small>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="savebar">
             <small>Guarda la configuración en Firebase.</small>
             <button class="btn primary saveBtn" data-config="welcome">
@@ -849,16 +880,30 @@ main {
                 </div>
               </div>
               <div class="field">
-                <label>Intervalo de publicación</label>
-                <div class="field-grid">
-                  <input type="number" id="embedInterval" min="1" max="10080" value="60">
-                  <select id="embedUnit">
-                    <option value="minutes">Minutos</option>
-                    <option value="hours">Horas</option>
-                    <option value="days">Días</option>
-                  </select>
-                </div>
+                <label>Hora de publicación (Chile)</label>
+                <input type="time" id="embedTime" value="18:00">
               </div>
+            </div>
+            <div class="field">
+              <label>Días en que se repetirá cada semana</label>
+              <div class="day-picker" id="embedDays">
+                <label><input type="checkbox" value="1" checked> Lun</label>
+                <label><input type="checkbox" value="2" checked> Mar</label>
+                <label><input type="checkbox" value="3" checked> Mié</label>
+                <label><input type="checkbox" value="4" checked> Jue</label>
+                <label><input type="checkbox" value="5" checked> Vie</label>
+                <label><input type="checkbox" value="6" checked> Sáb</label>
+                <label><input type="checkbox" value="0" checked> Dom</label>
+              </div>
+              <small class="help">Se publicará a esa hora en cada día seleccionado, usando la hora de Chile.</small>
+            </div>
+            <div class="field">
+              <label>URL de imagen grande (opcional)</label>
+              <input id="embedImage" type="url" placeholder="https://ejemplo.com/banner.png">
+            </div>
+            <div class="field">
+              <label>URL de miniatura (opcional)</label>
+              <input id="embedThumbnail" type="url" placeholder="https://ejemplo.com/logo.png">
             </div>
             <div class="savebar">
               <small>El bot revisa el horario automáticamente cada minuto.</small>
@@ -872,7 +917,9 @@ main {
             <div class="embed-preview" id="embedPreview">
               <h3 id="embedPreviewTitle">Título del mensaje</h3>
               <p id="embedPreviewDescription">La descripción del embed aparecerá aquí.</p>
-              <small>STREET CONTROL</small>
+              <img id="embedPreviewThumbnail" class="preview-thumbnail hidden" alt="Miniatura del embed">
+              <img id="embedPreviewImage" class="preview-banner hidden" alt="Imagen del embed">
+              <small>STREET CONTROL • Mensaje automático</small>
             </div>
             <div class="module" style="margin-top:20px">
               <div class="module-info">
@@ -1135,9 +1182,12 @@ document.querySelectorAll(".module-toggle").forEach(toggle => {
 function getConfigValues() {
   return {
     welcome: {
-      channel: document.getElementById("welcomeChannel").value,
+      channel: document.getElementById("welcomeChannel").value.trim(),
       welcomeMessage: document.getElementById("welcomeText").value,
-      goodbyeMessage: document.getElementById("goodbyeText").value
+      goodbyeMessage: document.getElementById("goodbyeText").value,
+      image: document.getElementById("welcomeImage").value.trim(),
+      thumbnail: document.getElementById("welcomeThumbnail").value.trim(),
+      color: document.getElementById("welcomeColor").value
     },
 
     tickets: {
@@ -1171,8 +1221,10 @@ function getConfigValues() {
       title: document.getElementById("embedTitle").value.trim(),
       description: document.getElementById("embedDescription").value,
       color: document.getElementById("embedColor").value,
-      interval: Math.min(10080, Math.max(1, Number(document.getElementById("embedInterval").value || 60))),
-      unit: document.getElementById("embedUnit").value
+      time: document.getElementById("embedTime").value || "18:00",
+      days: [...document.querySelectorAll("#embedDays input:checked")].map(item => item.value),
+      image: document.getElementById("embedImage").value.trim(),
+      thumbnail: document.getElementById("embedThumbnail").value.trim()
     },
 
     logs: {
@@ -1262,7 +1314,10 @@ function applyConfig(section, data) {
     welcome: {
       channel: "welcomeChannel",
       welcomeMessage: "welcomeText",
-      goodbyeMessage: "goodbyeText"
+      goodbyeMessage: "goodbyeText",
+      image: "welcomeImage",
+      thumbnail: "welcomeThumbnail",
+      color: "welcomeColor"
     },
 
     tickets: {
@@ -1287,8 +1342,9 @@ function applyConfig(section, data) {
       title: "embedTitle",
       description: "embedDescription",
       color: "embedColor",
-      interval: "embedInterval",
-      unit: "embedUnit"
+      time: "embedTime",
+      image: "embedImage",
+      thumbnail: "embedThumbnail"
     },
 
     activities: {
@@ -1324,6 +1380,18 @@ function applyConfig(section, data) {
   }
 }
 
+function setPreviewImage(elementId, url) {
+  const image = document.getElementById(elementId);
+  if (!image) return;
+  if (/^https?:\/\//i.test(url || "")) {
+    image.src = url;
+    image.classList.remove("hidden");
+    image.onerror = () => image.classList.add("hidden");
+  } else {
+    image.removeAttribute("src");
+    image.classList.add("hidden");
+  }
+}
 function updateEmbedPreview() {
   const title = document.getElementById("embedTitle").value.trim();
   const description = document.getElementById("embedDescription").value.trim();
@@ -1332,10 +1400,22 @@ function updateEmbedPreview() {
   document.getElementById("embedPreviewDescription").textContent = description || "La descripción del embed aparecerá aquí.";
   document.getElementById("embedPreview").style.setProperty("--embed-color", color);
   document.getElementById("embedColorText").value = color.toUpperCase();
+  setPreviewImage("embedPreviewImage", document.getElementById("embedImage").value.trim());
+  setPreviewImage("embedPreviewThumbnail", document.getElementById("embedThumbnail").value.trim());
 }
-["embedTitle", "embedDescription", "embedColor"].forEach(id => {
-  document.getElementById(id).addEventListener("input", updateEmbedPreview);
-});
+function updateWelcomePreview() {
+  const message = document.getElementById("welcomeText").value.trim();
+  document.getElementById("welcomePreviewTitle").textContent = message.replaceAll("{usuario}", "Usuario").replaceAll("{servidor}", "STREET CONTROL").replaceAll("{miembros}", "128") || "¡Bienvenido/a Usuario a STREET CONTROL!";
+  document.getElementById("welcomePreviewDescription").textContent = "Este es un ejemplo del mensaje de bienvenida.";
+  document.getElementById("welcomePreview").style.setProperty("--embed-color", document.getElementById("welcomeColor").value);
+  setPreviewImage("welcomePreviewImage", document.getElementById("welcomeImage").value.trim());
+  setPreviewImage("welcomePreviewThumbnail", document.getElementById("welcomeThumbnail").value.trim());
+}
+["embedTitle", "embedDescription", "embedColor", "embedImage", "embedThumbnail"].forEach(id => document.getElementById(id).addEventListener("input", updateEmbedPreview));
+["welcomeText", "welcomeImage", "welcomeThumbnail", "welcomeColor"].forEach(id => document.getElementById(id).addEventListener("input", updateWelcomePreview));
+document.querySelectorAll("#embedDays input").forEach(item => item.addEventListener("change", () => {
+  if (!document.querySelector("#embedDays input:checked")) item.checked = true;
+}));
 document.getElementById("embedColorText").addEventListener("change", event => {
   const value = event.target.value.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(value)) {
@@ -1348,6 +1428,7 @@ document.getElementById("embedColorText").addEventListener("change", event => {
 });
 updateCount();
 updateEmbedPreview();
+updateWelcomePreview();
 
 </script>
 
