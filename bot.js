@@ -29,6 +29,7 @@ const db = admin.apps.length ? admin.database() : null;
 let config = {};
 let firebaseConfigLoaded = false;
 let lastScheduledKey = "";
+let lastEmbedSentAt = 0;
 
 const client = new Client({
   intents: [
@@ -200,6 +201,8 @@ client.once(Events.ClientReady, async readyClient => {
     console.error("[FIREBASE] Admin SDK no inicializado. Comprueba FIREBASE_SERVICE_ACCOUNT_JSON (JSON de cuenta de servicio) y FIREBASE_DATABASE_URL en Render.");
   }
   if (db) {
+    const savedLastEmbed = await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/embedScheduler/lastSentAt`).once("value").catch(() => null);
+    lastEmbedSentAt = Number(savedLastEmbed?.val() || 0);
     const configsPath = `users/${process.env.OWNER_UID}/configs`;
     db.ref(configsPath).on("value", snap => {
       const sections = snap.val() || {};
@@ -208,6 +211,7 @@ client.once(Events.ClientReady, async readyClient => {
       const moderation = sections.moderation || {};
       const activities = sections.activities || {};
       const logs = sections.logs || {};
+      const embeds = sections.embeds || {};
       const modules = sections.modules || {};
 
       // El panel web guarda cada modulo por separado en users/{uid}/configs.
@@ -218,6 +222,7 @@ client.once(Events.ClientReady, async readyClient => {
           tickets: modules.tickets ?? Boolean(tickets.channel || tickets.title),
           moderation: modules.moderation ?? Boolean(moderation.antiSpam || moderation.linkFilter),
           activities: modules.activities ?? Boolean(activities.channel && activities.message),
+          embeds: modules.embeds ?? Boolean(embeds.channel && embeds.description),
           logs: modules.logs ?? Boolean(logs.channel && (logs.members || logs.messages || logs.moderation))
         },
         welcomeChannelId: welcome.channel || "",
@@ -240,6 +245,11 @@ client.once(Events.ClientReady, async readyClient => {
         activityTime2: activities.time2 || "21:00",
         activityMessage: activities.message || "",
         activityRoleId: activities.roleId || "",
+        embedChannelId: embeds.channel || "",
+        scheduledEmbedTitle: embeds.title || "",
+        scheduledEmbedDescription: embeds.description || "",
+        scheduledEmbedColor: /^#[0-9a-fA-F]{6}$/.test(embeds.color || "") ? embeds.color : "#C1121F",
+        scheduledEmbedIntervalMs: Math.max(1, Number(embeds.interval || 60)) * ({ minutes: 60000, hours: 3600000, days: 86400000 }[embeds.unit] || 60000),
         timezone: activities.timezone || "America/Santiago"
       };
       firebaseConfigLoaded = true;
@@ -380,21 +390,54 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-// Avisos diarios usando la zona horaria configurada. No duplica el mismo minuto.
+// Revisa avisos diarios y embeds programados cada minuto.
 cron.schedule("* * * * *", async () => {
-  if (!config.modules?.activities || !config.activityChannelId || !config.activityMessage) return;
-  const tz = config.timezone || "America/Santiago";
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23"
-  }).format(new Date());
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const times = [config.activityTime1 || "14:00", config.activityTime2 || "21:00"];
-  for (const time of times) {
-    const key = `${today}-${time}`;
-    if (parts === time && lastScheduledKey !== key) {
-      lastScheduledKey = key;
-      await sendConfigured(config.activityChannelId, `${config.activityRoleId ? `<@&${config.activityRoleId}> ` : ""}${config.activityMessage}`);
+  try {
+    if (config.modules?.activities && config.activityChannelId && config.activityMessage) {
+      const tz = config.timezone || "America/Santiago";
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+      }).format(new Date());
+      const today = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"
+      }).format(new Date());
+      const times = [config.activityTime1 || "14:00", config.activityTime2 || "21:00"];
+      for (const time of times) {
+        const key = `${today}-${time}`;
+        if (parts === time && lastScheduledKey !== key) {
+          lastScheduledKey = key;
+          await sendConfigured(config.activityChannelId,
+            `${config.activityRoleId ? `<@&${config.activityRoleId}> ` : ""}${config.activityMessage}`);
+        }
+      }
     }
+
+    if (config.modules?.embeds && config.embedChannelId && config.scheduledEmbedDescription) {
+      const now = Date.now();
+      const interval = Math.max(60000, Number(config.scheduledEmbedIntervalMs || 3600000));
+      if (!lastEmbedSentAt || now - lastEmbedSentAt >= interval) {
+        const channel = await client.channels.fetch(config.embedChannelId).catch(() => null);
+        if (!channel || !channel.isTextBased()) {
+          console.error("[EMBEDS] No se encuentra el canal configurado o no es de texto.");
+        } else {
+          const embed = new EmbedBuilder()
+            .setColor(config.scheduledEmbedColor || "#C1121F")
+            .setDescription(config.scheduledEmbedDescription.slice(0, 4000))
+            .setFooter({ text: "STREET CONTROL • Mensaje automático" })
+            .setTimestamp(new Date());
+          if (config.scheduledEmbedTitle) embed.setTitle(config.scheduledEmbedTitle.slice(0, 256));
+          await channel.send({ embeds: [embed] });
+          lastEmbedSentAt = now;
+          if (db) {
+            await db.ref(`users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/embedScheduler/lastSentAt`)
+              .set(lastEmbedSentAt).catch(err => console.error("[EMBEDS] No se pudo guardar la última publicación:", err.message));
+          }
+          console.log("[EMBEDS] Mensaje programado publicado correctamente.");
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[PROGRAMADOR] Error al procesar mensajes programados:", err.message);
   }
 }, { timezone: "UTC" });
 
