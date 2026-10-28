@@ -390,6 +390,8 @@ main {
   display: block;
 }
 
+.day-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.day-picker label{display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0b1019;font-size:12px}.day-picker input{accent-color:var(--red)}.discord-preview{display:flex;gap:12px;background:#202225;border-radius:8px;padding:14px;color:#dcddde}.discord-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#c1121f;font-weight:800}.discord-message{min-width:0;flex:1}.discord-message>strong{font-size:13px}.discord-message>strong small{font-weight:400;color:#aeb3ba;margin-left:6px}.preview-thumbnail{float:right;max-width:76px;max-height:76px;object-fit:cover;border-radius:6px;margin:4px 0 8px 10px}.preview-banner{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:5px;margin:12px 0}.preview-card{margin-top:16px}.welcome-preview{margin-top:10px}.embed-preview{border-left:4px solid var(--embed-color,#c1121f);background:#111827;padding:14px;border-radius:5px;overflow:hidden}.embed-preview h3{margin:0 0 8px}.embed-preview p{white-space:pre-wrap;overflow-wrap:anywhere}.embed-preview small{color:#9ca3af}
+
 @media(max-width: 900px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
@@ -1180,9 +1182,12 @@ document.querySelectorAll(".module-toggle").forEach(toggle => {
 function getConfigValues() {
   return {
     welcome: {
-      channel: document.getElementById("welcomeChannel").value,
+      channel: document.getElementById("welcomeChannel").value.trim(),
       welcomeMessage: document.getElementById("welcomeText").value,
-      goodbyeMessage: document.getElementById("goodbyeText").value
+      goodbyeMessage: document.getElementById("goodbyeText").value,
+      image: document.getElementById("welcomeImage").value.trim(),
+      thumbnail: document.getElementById("welcomeThumbnail").value.trim(),
+      color: document.getElementById("welcomeColor").value
     },
 
     tickets: {
