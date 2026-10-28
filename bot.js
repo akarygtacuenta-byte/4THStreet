@@ -26,7 +26,7 @@ if (!admin.apps.length && serviceAccount.project_id) {
   });
 }
 const db = admin.apps.length ? admin.database() : null;
-const configsPath = `users/${process.env.OWNER_UID}/configs`;
+const configPath = `users/${process.env.OWNER_UID}/guilds/${process.env.GUILD_ID}/config`;
 let config = {};
 let lastScheduledKey = "";
 
@@ -95,48 +95,12 @@ client.once(Events.ClientReady, async readyClient => {
   console.log(`Bot conectado como ${readyClient.user.tag}`);
   try { await registerCommands(); } catch (e) { console.error("No se pudieron registrar comandos:", e.message); }
   if (db) {
-  db.ref(configsPath).on("value", snap => {
-    const sections = snap.val() || {};
-    const welcome = sections.welcome || {};
-    const tickets = sections.tickets || {};
-    const moderation = sections.moderation || {};
-    const activities = sections.activities || {};
-    const logs = sections.logs || {};
-
-    config = {
-      modules: {
-        welcome: Boolean(welcome.channel),
-        tickets: Boolean(tickets.channel),
-        moderation: Boolean(moderation.antiSpam || moderation.linkFilter),
-        activities: Boolean(activities.channel && activities.message),
-        logs: Boolean(logs.channel)
-      },
-
-      welcomeChannelId: welcome.channel || "",
-      welcomeMessage: welcome.welcomeMessage || "",
-      goodbyeMessage: welcome.goodbyeMessage || "",
-
-      ticketTitle: tickets.title || "CENTRO DE SOPORTE",
-      ticketDescription: tickets.description || "",
-      ticketOpenMessage: "Describe tu consulta con el mayor detalle posible.",
-
-      blockLinks: Boolean(moderation.linkFilter),
-      spamLimit: 5,
-
-      activityChannelId: activities.channel || "",
-      activityTime1: activities.time1 || "14:00",
-      activityTime2: activities.time2 || "21:00",
-      activityMessage: activities.message || "",
-      timezone: activities.timezone || "America/Santiago",
-
-      logsChannelId: logs.channel || ""
-    };
-
-    console.log("Configuración recargada desde Firebase.");
-  }, err => {
-    console.error("Error leyendo Firebase:", err.message);
-  });
-}
+    db.ref(configPath).on("value", snap => {
+      config = snap.val() || {};
+      console.log("Configuracion recargada desde Firebase.");
+    }, err => console.error("Error leyendo configuracion Firebase:", err.message));
+  }
+});
 
 client.on(Events.GuildMemberAdd, async member => {
   if (config.modules?.welcome) {
