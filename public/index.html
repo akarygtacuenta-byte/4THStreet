@@ -1363,6 +1363,31 @@ document.querySelectorAll(".saveBtn").forEach(button => {
   });
 });
 
+// Los interruptores del resumen también guardan su estado real en Firebase.
+document.querySelectorAll(".module-toggle[data-module]").forEach(toggle => {
+  toggle.addEventListener("change", async () => {
+    if (!currentUser) {
+      toggle.checked = !toggle.checked;
+      showToast("Primero inicia sesión para cambiar módulos.");
+      return;
+    }
+    const previousState = !toggle.checked;
+    try {
+      const modules = {};
+      document.querySelectorAll(".module-toggle[data-module]").forEach(item => {
+        modules[item.dataset.module] = item.checked;
+      });
+      await set(ref(db, "users/" + currentUser.uid + "/configs/modules"), modules);
+      updateCount();
+      showToast((toggle.checked ? "Módulo activado: " : "Módulo desactivado: ") + toggle.dataset.module);
+    } catch (error) {
+      console.error("No se pudo guardar el estado de los módulos:", error);
+      toggle.checked = previousState;
+      showToast("No se pudo guardar el módulo en Firebase. Revisa las reglas.");
+    }
+  });
+});
+
 /* CARGAR CONFIGURACIONES */
 
 async function loadConfigs() {
